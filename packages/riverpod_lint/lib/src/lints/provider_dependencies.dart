@@ -5,9 +5,12 @@ import 'package:analyzer/error/error.dart'
         // ignore: undefined_hidden_name, necessary to support lower analyzer version
         LintCode;
 import 'package:analyzer/error/listener.dart';
+import 'package:analyzer/source/source.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_dart.dart';
 import 'package:analyzer_plugin/utilities/range_factory.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
+import 'package:glob/glob.dart';
+import 'package:path/path.dart' as p;
 import 'package:riverpod_analyzer_utils/riverpod_analyzer_utils.dart';
 
 import '../imports.dart';
@@ -183,12 +186,113 @@ class _Data {
   final List<_LocatedProvider> usedDependencies;
 }
 
+class _AnalysisResult {
+  _AnalysisResult({
+    required this.data,
+    required this.message,
+    required this.contextMessages,
+  });
+
+  final _Data data;
+  final String message;
+  final List<DiagnosticMessage> contextMessages;
+}
+
 extension on AccumulatedDependencyList {
   AstNode get target =>
       riverpod?.annotation.dependencyList?.node ??
       riverpod?.annotation.node ??
       dependencies?.dependencies.node ??
       node;
+}
+
+bool _shouldSkipList(AccumulatedDependencyList list) {
+  if (list.overrides != null) return true;
+
+  // If the State has an associated widget, we don't visit it.
+  // The widget will already visit the state.
+  if (list.node.safeCast<ClassDeclaration>()?.state?.findWidgetAst() != null) {
+    return true;
+  }
+
+  return false;
+}
+
+_AnalysisResult? _analyzeDependencies(AccumulatedDependencyList list) {
+  final usedDependencies = <_LocatedProvider>[];
+
+  final visitor = _FindNestedDependency(
+    list,
+    onProvider: (locatedProvider, list, {required checkOverrides}) {
+      final provider = locatedProvider.provider;
+      if (provider is! GeneratorProviderDeclarationElement) return;
+      if (!provider.isScoped) return;
+
+      // Check if the provider is overridden. If it is, the provider doesn't
+      // count towards the unused/missing dependencies
+      if (checkOverrides && list.isSafelyAccessibleAfterOverrides(provider)) {
+        return;
+      }
+
+      usedDependencies.add(locatedProvider);
+    },
+  );
+
+  list.node.accept(visitor);
+
+  var unusedDependencies = list.allDependencies
+      ?.where(
+        (dependency) =>
+            !usedDependencies.any((e) => e.provider == dependency.provider),
+      )
+      .toList();
+  final missingDependencies = usedDependencies
+      .where(
+        (dependency) =>
+            list.allDependencies?.every(
+              (e) => e.provider != dependency.provider,
+            ) ??
+            true,
+      )
+      .toSet();
+
+  unusedDependencies ??= const [];
+  if (unusedDependencies.isEmpty && missingDependencies.isEmpty) {
+    return null;
+  }
+
+  final message = StringBuffer();
+  if (unusedDependencies.isNotEmpty) {
+    message.write('Unused dependencies: ');
+    message.writeAll(unusedDependencies.map((e) => e.provider.name), ', ');
+  }
+  if (missingDependencies.isNotEmpty) {
+    if (unusedDependencies.isNotEmpty) {
+      message.write(' | ');
+    }
+    message.write('Missing dependencies: ');
+    message.writeAll(missingDependencies.map((e) => e.provider.name), ', ');
+  }
+
+  final unit = list.node.thisOrAncestorOfType<CompilationUnit>();
+  final Source? source = unit?.declaredFragment?.source;
+
+  final contextMessages = <DiagnosticMessage>[
+    for (final dependency in missingDependencies)
+      if (source != null)
+        _MyDiagnostic(
+          message: dependency.provider.name,
+          filePath: source.fullName,
+          offset: dependency.node.offset,
+          length: dependency.node.length,
+        ),
+  ];
+
+  return _AnalysisResult(
+    data: _Data(usedDependencies: usedDependencies, list: list),
+    message: message.toString(),
+    contextMessages: contextMessages,
+  );
 }
 
 class ProviderDependencies extends RiverpodLintRule {
@@ -207,98 +311,122 @@ class ProviderDependencies extends RiverpodLintRule {
     CustomLintContext context,
   ) {
     riverpodRegistry(context).addAccumulatedDependencyList((list) {
-      // Ignore ProviderScopes. We only check annotations
-      if (list.overrides != null) return;
+      if (_shouldSkipList(list)) return;
+      if (list.riverpod == null) return;
 
-      // If the State has an associated widget, we don't visit it.
-      // The widget will already visit the state.
-      if (list.node.safeCast<ClassDeclaration>()?.state?.findWidgetAst() !=
-          null) {
-        return;
-      }
-
-      final usedDependencies = <_LocatedProvider>[];
-
-      final visitor = _FindNestedDependency(
-        list,
-        onProvider: (locatedProvider, list, {required checkOverrides}) {
-          final provider = locatedProvider.provider;
-          if (provider is! GeneratorProviderDeclarationElement) return;
-          if (!provider.isScoped) return;
-
-          // Check if the provider is overridden. If it is, the provider doesn't
-          // count towards the unused/missing dependencies
-          if (checkOverrides &&
-              list.isSafelyAccessibleAfterOverrides(provider)) {
-            return;
-          }
-
-          usedDependencies.add(locatedProvider);
-        },
-      );
-
-      list.node.accept(visitor);
-
-      var unusedDependencies =
-          list.allDependencies
-              ?.where(
-                (dependency) =>
-                    !usedDependencies.any(
-                      (e) => e.provider == dependency.provider,
-                    ),
-              )
-              .toList();
-      final missingDependencies =
-          usedDependencies
-              .where(
-                (dependency) =>
-                    list.allDependencies?.every(
-                      (e) => e.provider != dependency.provider,
-                    ) ??
-                    true,
-              )
-              .toSet();
-
-      unusedDependencies ??= const [];
-      if (unusedDependencies.isEmpty && missingDependencies.isEmpty) return;
-
-      final message = StringBuffer();
-      if (unusedDependencies.isNotEmpty) {
-        message.write('Unused dependencies: ');
-        message.writeAll(unusedDependencies.map((e) => e.provider.name), ', ');
-      }
-      if (missingDependencies.isNotEmpty) {
-        if (unusedDependencies.isNotEmpty) {
-          message.write(' | ');
-        }
-        message.write('Missing dependencies: ');
-        message.writeAll(missingDependencies.map((e) => e.provider.name), ', ');
-      }
-
-      late final unit = list.node.thisOrAncestorOfType<CompilationUnit>();
-      late final source = unit?.declaredFragment?.source;
+      final analysis = _analyzeDependencies(list);
+      if (analysis == null) return;
 
       reporter.atNode(
         list.target,
         _code,
-        arguments: [message.toString()],
-        contextMessages: [
-          for (final dependency in missingDependencies)
-            if (source != null)
-              _MyDiagnostic(
-                message: dependency.provider.name,
-                filePath: source.fullName,
-                offset: dependency.node.offset,
-                length: dependency.node.length,
-              ),
-        ],
-        data: _Data(usedDependencies: usedDependencies, list: list),
+        arguments: [analysis.message],
+        contextMessages: analysis.contextMessages,
+        data: analysis.data,
       );
     });
   }
 
   @override
   List<DartFix> getFixes() => [_ProviderDependenciesFix()];
+}
+
+class ScopedConsumerDependencies extends RiverpodLintRule {
+  ScopedConsumerDependencies({
+    required List<Glob> include,
+    required List<Glob> exclude,
+  }) : _include = List.unmodifiable(include),
+       _exclude = List.unmodifiable(exclude),
+       super(code: _code);
+
+  static const _code = LintCode(
+    name: 'scoped_consumer_dependencies',
+    problemMessage: '{0}',
+    errorSeverity: ErrorSeverity.INFO,
+  );
+
+  final List<Glob> _include;
+  final List<Glob> _exclude;
+
+  @override
+  void run(
+    CustomLintResolver resolver,
+    ErrorReporter reporter,
+    CustomLintContext context,
+  ) {
+    final fileUri = resolver.source.uri;
+    if (!_shouldLintFile(fileUri)) return;
+
+    riverpodRegistry(context).addAccumulatedDependencyList((list) {
+      if (_shouldSkipList(list)) return;
+      if (list.riverpod != null) return;
+
+      final analysis = _analyzeDependencies(list);
+      if (analysis == null) return;
+
+      reporter.atNode(
+        list.target,
+        _code,
+        arguments: [analysis.message],
+        contextMessages: analysis.contextMessages,
+        data: analysis.data,
+      );
+    });
+  }
+
+  bool _shouldLintFile(Uri uri) {
+    final candidates = _pathCandidatesForUri(uri);
+    if (candidates.isEmpty) return false;
+
+    if (_include.isNotEmpty) {
+      final matchesInclude = candidates.any(
+        (path) => _include.any((glob) => glob.matches(path)),
+      );
+      if (!matchesInclude) return false;
+    }
+
+    final matchesExclude = candidates.any(
+      (path) => _exclude.any((glob) => glob.matches(path)),
+    );
+    return !matchesExclude;
+  }
+
+  @override
+  List<DartFix> getFixes() => [_ProviderDependenciesFix()];
+}
+
+List<String> _pathCandidatesForUri(Uri uri) {
+  String? resolved;
+  try {
+    resolved = uri.toFilePath();
+  } catch (_) {
+    resolved = uri.path;
+  }
+
+  if (resolved.isEmpty) return const [];
+
+  final normalized = _normalizePath(resolved);
+  final segments = normalized.split('/');
+
+  final candidates = <String>{normalized};
+
+  for (var i = 0; i < segments.length; i++) {
+    final segment = segments[i];
+    if (segment == 'lib' ||
+        segment == 'test' ||
+        segment == 'example' ||
+        segment == 'bin' ||
+        segment == 'tool') {
+      candidates.add(segments.sublist(i).join('/'));
+    }
+  }
+
+  return candidates.toList();
+}
+
+String _normalizePath(String path) {
+  final normalized = path.replaceAll('\\', '/');
+  return p.posix.normalize(normalized);
 }
 
 class _ProviderDependenciesFix extends RiverpodFix {
@@ -313,12 +441,12 @@ class _ProviderDependenciesFix extends RiverpodFix {
     final data = analysisError.data;
     if (data is! _Data) return;
 
-    final scopedDependencies =
-        data.usedDependencies.map((e) => e.provider).toSet();
-    final newDependencies =
-        scopedDependencies.isEmpty
-            ? null
-            : '[${scopedDependencies.map((e) => e.name).join(', ')}]';
+    final scopedDependencies = data.usedDependencies
+        .map((e) => e.provider)
+        .toSet();
+    final newDependencies = scopedDependencies.isEmpty
+        ? null
+        : '[${scopedDependencies.map((e) => e.name).join(', ')}]';
 
     final riverpodAnnotation = data.list.riverpod?.annotation;
     final dependencies = data.list.dependencies;
