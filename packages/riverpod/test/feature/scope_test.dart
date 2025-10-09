@@ -354,6 +354,28 @@ Future<void> main() async {
     });
 
     test(
+      'auto scope after an ancestor already read the provider',
+      () {
+        final dep = Provider((ref) => 0, dependencies: const []);
+        final provider = Provider(
+          (ref) => ref.watch(dep),
+          dependencies: [dep],
+        );
+
+        final root = ProviderContainer.test();
+        expect(root.read(provider), 0);
+
+        final scoped = ProviderContainer.test(
+          parent: root,
+          overrides: [dep.overrideWithValue(42)],
+        );
+
+        expect(scoped.read(provider), 42);
+        expect(root.read(provider), 0);
+      },
+    );
+
+    test(
       'auto scope still works if the first read of the auto-override is through a child container',
       () {
         final dep = Provider((ref) => 0, name: 'dep', dependencies: const []);
