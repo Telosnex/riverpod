@@ -74,28 +74,48 @@ extension<PointerT extends _PointerBase, ProviderT extends ProviderOrFamily>
     required PointerT Function(ProviderContainer) inherit,
     required PointerT Function({ProviderT? override}) scope,
   }) {
-    final pointer = this[provider];
-    if (pointer != null) return pointer;
+    final existingPointer = this[provider];
+
+    var hasExplicitOverride = false;
+    if (existingPointer case final pointer?) {
+      hasExplicitOverride = switch (pointer) {
+        $ProviderPointer(:final providerOverride?)
+            when providerOverride is! TransitiveProviderOverride => true,
+        ProviderDirectory(:final familyOverride?)
+            when familyOverride is! TransitiveFamilyOverride => true,
+        _ => false,
+      };
+    }
+
+    if (hasExplicitOverride) {
+      return existingPointer!;
+    }
 
     final deepestTransitiveDependencyContainer = currentContainer
         ._pointerManager
         .findDeepestTransitiveDependencyProviderContainer(provider);
 
-    final target =
-        deepestTransitiveDependencyContainer ??
-        pointer?.targetContainer ??
+    final desiredTarget = deepestTransitiveDependencyContainer ??
+        existingPointer?.targetContainer ??
         targetContainer ??
         currentContainer._root ??
         currentContainer;
 
-    if (target == currentContainer) {
-      return this[provider] = scope(
+    if (existingPointer != null &&
+        existingPointer.targetContainer == desiredTarget) {
+      return existingPointer;
+    }
+
+    if (desiredTarget == currentContainer) {
+      final pointer = scope(
         override:
             deepestTransitiveDependencyContainer == null ? null : provider,
       );
+      return this[provider] = pointer;
     }
 
-    return this[provider] = inherit(target);
+    final pointer = inherit(desiredTarget);
+    return this[provider] = pointer;
   }
 }
 
