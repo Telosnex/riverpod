@@ -248,16 +248,18 @@ class ProviderDependencies extends RiverpodLintRule {
                     ),
               )
               .toList();
+      final missingDependenciesMap =
+          <ProviderDeclarationElement, _LocatedProvider>{};
+      for (final dependency in usedDependencies) {
+        final provider = dependency.provider;
+        final isMissing =
+            list.allDependencies?.every((e) => e.provider != provider) ?? true;
+        if (isMissing && !missingDependenciesMap.containsKey(provider)) {
+          missingDependenciesMap[provider] = dependency;
+        }
+      }
       final missingDependencies =
-          usedDependencies
-              .where(
-                (dependency) =>
-                    list.allDependencies?.every(
-                      (e) => e.provider != dependency.provider,
-                    ) ??
-                    true,
-              )
-              .toSet();
+          missingDependenciesMap.values.toList(growable: false);
 
       unusedDependencies ??= const [];
       if (unusedDependencies.isEmpty && missingDependencies.isEmpty) return;
