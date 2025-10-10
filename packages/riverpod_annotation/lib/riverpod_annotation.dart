@@ -5,6 +5,8 @@ import 'package:meta/meta.dart' as meta;
 
 export 'dart:async' show FutureOr;
 
+export './experimental/scope.dart' show Dependencies;
+
 // ignore: invalid_export_of_internal_element
 export './src/internal.dart'
     show
