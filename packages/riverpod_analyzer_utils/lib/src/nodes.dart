@@ -12,6 +12,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
+import 'package:analyzer/src/dart/element/element.dart' as analyzer;
 import 'package:analyzer_buffer/analyzer_buffer.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -105,4 +106,11 @@ final class _CacheCircularDependencyError extends Error {
   @override
   String toString() =>
       '_CacheCircularDependencyError: Circular dependency detected while computing "$object".';
+}
+
+Object _annotationCacheKey(ElementAnnotation annotation) {
+  if (annotation is analyzer.ElementAnnotationImpl) {
+    return annotation.annotationAst;
+  }
+  return annotation;
 }

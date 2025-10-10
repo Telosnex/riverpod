@@ -461,7 +461,7 @@ final class DependenciesAnnotationElement {
     AstNode from,
   ) {
     return _cache(
-      annotation,
+      _annotationCacheKey(annotation),
       () {
         final type = annotation.element2.cast<ExecutableElement2>()?.returnType;
         if (type == null || !dependenciesType.isExactlyType(type)) return null;

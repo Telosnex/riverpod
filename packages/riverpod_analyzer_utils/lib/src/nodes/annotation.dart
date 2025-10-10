@@ -104,7 +104,7 @@ final class RiverpodAnnotationElement {
     AstNode from,
   ) {
     return _cache(
-      element,
+      _annotationCacheKey(element),
       () {
         final type = element.element2.cast<ExecutableElement2>()?.returnType;
         if (type == null || !riverpodType.isExactlyType(type)) return null;
