@@ -1,10 +1,10 @@
 part of '../nodes.dart';
 
 extension on CollectionElement {
-  static final _cache = Expando<Box<ProviderDependency?>>();
+  static final _cache = _Cache<ProviderDependency?>();
 
   ProviderDependency? get providerDependency {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       final that = this;
       if (that is! Expression) {
         errorReporter(
@@ -77,7 +77,7 @@ extension on CollectionElement {
         ),
       );
       return null;
-    });
+    }, onCycle: () => null);
   }
 }
 
@@ -89,10 +89,10 @@ final class ProviderDependency {
 }
 
 extension on Expression {
-  static final _cache = Expando<Box<ProviderDependencyList?>>();
+  static final _cache = _Cache<ProviderDependencyList?>();
 
   ProviderDependencyList? get providerDependencyList {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       final that = this;
       // explicit null, count as valid value (no dependencies)
       if (that is NullLiteral) {
@@ -118,7 +118,7 @@ extension on Expression {
                 .whereType<ProviderDependency>()
                 .toList(),
       );
-    });
+    }, onCycle: () => null);
   }
 }
 
@@ -289,10 +289,10 @@ extension AccumulatedDependenciesX on AstNode {
 }
 
 extension on InstanceCreationExpression {
-  static final _cache = Expando<Box<AccumulatedDependencyList?>>();
+  static final _cache = _Cache<AccumulatedDependencyList?>();
 
   AccumulatedDependencyList? get accumulatedDependencies {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       final providerScope = this.providerScope;
       if (providerScope == null) return null;
 
@@ -303,15 +303,15 @@ extension on InstanceCreationExpression {
         riverpod: null,
         widgetDependencies: null,
       );
-    });
+    }, onCycle: () => null);
   }
 }
 
 extension on AnnotatedNode {
-  static final _cache = Expando<Box<AccumulatedDependencyList?>>();
+  static final _cache = _Cache<AccumulatedDependencyList?>();
 
   AccumulatedDependencyList? get accumulatedDependencies {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       final provider = cast<Declaration>()?.provider;
       // Have State inherit dependencies from its widget
       final state = cast<ClassDeclaration>()?.state;
@@ -333,7 +333,7 @@ extension on AnnotatedNode {
         riverpod: provider,
         widgetDependencies: state?.widget?.dependencies?.dependencies,
       );
-    });
+    }, onCycle: () => null);
   }
 }
 
@@ -346,10 +346,10 @@ class IdentifierDependencies {
 
 @_ast
 extension IdentifierDependenciesX on Identifier {
-  static final _cache = Expando<Box<IdentifierDependencies?>>();
+  static final _cache = _Cache<IdentifierDependencies?>();
 
   IdentifierDependencies? get identifierDependencies {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       final Object? staticElement = element;
       if (staticElement is! Annotatable) return null;
 
@@ -360,7 +360,7 @@ extension IdentifierDependenciesX on Identifier {
       if (dependencies == null) return null;
 
       return IdentifierDependencies._(node: this, dependencies: dependencies);
-    });
+    }, onCycle: () => null);
   }
 }
 
@@ -373,10 +373,10 @@ class NamedTypeDependencies {
 
 @_ast
 extension NamedTypeDependenciesX on NamedType {
-  static final _cache = Expando<Box<NamedTypeDependencies?>>();
+  static final _cache = _Cache<NamedTypeDependencies?>();
 
   NamedTypeDependencies? get typeAnnotationDependencies {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       final Object? staticElement = type?.element3;
       if (staticElement is! Annotatable) return null;
 
@@ -387,26 +387,26 @@ extension NamedTypeDependenciesX on NamedType {
       if (dependencies == null) return null;
 
       return NamedTypeDependencies._(node: this, dependencies: dependencies);
-    });
+    }, onCycle: () => null);
   }
 }
 
 extension DependenciesAnnotatedAnnotatedNodeOfX on AnnotatedNode {
-  static final _cache = Expando<Box<DependenciesAnnotation?>>();
+  static final _cache = _Cache<DependenciesAnnotation?>();
 
   DependenciesAnnotation? get dependencies {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       return metadata.map((e) => e.dependencies).nonNulls.firstOrNull;
-    });
+    }, onCycle: () => null);
   }
 }
 
 @_ast
 extension DependenciesAnnotatedAnnotatedNodeX on Annotation {
-  static final _cache = Expando<Box<DependenciesAnnotation?>>();
+  static final _cache = _Cache<DependenciesAnnotation?>();
 
   DependenciesAnnotation? get dependencies {
-    return _cache.upsert(this, () {
+    return _cache(this, () {
       final elementAnnotation = annotationOfType(dependenciesType, exact: true);
       if (elementAnnotation == null) return null;
 
@@ -430,7 +430,7 @@ extension DependenciesAnnotatedAnnotatedNodeX on Annotation {
         dependenciesNode: dependenciesNode,
         element: dependenciesElement,
       );
-    });
+    }, onCycle: () => null);
   }
 }
 
@@ -460,22 +460,36 @@ final class DependenciesAnnotationElement {
     ElementAnnotation annotation,
     AstNode from,
   ) {
-    return _cache(annotation, () {
-      final type = annotation.element2.cast<ExecutableElement2>()?.returnType;
-      if (type == null || !dependenciesType.isExactlyType(type)) return null;
+    return _cache(
+      annotation,
+      () {
+        final type = annotation.element2.cast<ExecutableElement2>()?.returnType;
+        if (type == null || !dependenciesType.isExactlyType(type)) return null;
 
-      final dependencies = annotation.computeConstantValue()?.getField(
-        'dependencies',
-      );
-      if (dependencies == null) return null;
+        final dependencies = annotation.computeConstantValue()?.getField(
+          'dependencies',
+        );
+        if (dependencies == null) return null;
 
-      final dependencyList = dependencies.toDependencyList(from: from);
+        final dependencyList = dependencies.toDependencyList(from: from);
 
-      return DependenciesAnnotationElement._(
-        element: annotation,
-        dependencies: dependencyList,
-      );
-    });
+        return DependenciesAnnotationElement._(
+          element: annotation,
+          dependencies: dependencyList,
+        );
+      },
+      onCycle: () {
+        errorReporter(
+          RiverpodAnalysisError.ast(
+            'Circular dependencies are not supported. '
+            'Resolving this @Dependencies annotation resulted in a dependency cycle.',
+            targetNode: from,
+            code: RiverpodAnalysisErrorCode.providerDependencyListParseError,
+          ),
+        );
+        return null;
+      },
+    );
   }
 
   static DependenciesAnnotationElement? _of(Annotatable element, AstNode from) {
