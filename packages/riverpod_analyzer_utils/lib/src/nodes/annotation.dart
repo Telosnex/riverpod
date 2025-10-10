@@ -103,41 +103,56 @@ final class RiverpodAnnotationElement {
     ElementAnnotation element,
     AstNode from,
   ) {
-    return _cache(element, () {
-      final type = element.element2.cast<ExecutableElement2>()?.returnType;
-      if (type == null || !riverpodType.isExactlyType(type)) return null;
+    return _cache(
+      element,
+      () {
+        final type = element.element2.cast<ExecutableElement2>()?.returnType;
+        if (type == null || !riverpodType.isExactlyType(type)) return null;
 
-      final constant = element.computeConstantValue();
-      if (constant == null) return null;
+        final constant = element.computeConstantValue();
+        if (constant == null) return null;
 
-      final keepAlive = constant.getField('keepAlive');
-      if (keepAlive == null) return null;
+        final keepAlive = constant.getField('keepAlive');
+        if (keepAlive == null) return null;
 
-      final name = constant.getField('name');
-      if (name == null) return null;
+        final name = constant.getField('name');
+        if (name == null) return null;
 
-      final dependencies = constant.getField('dependencies');
-      if (dependencies == null) return null;
+        final dependencies = constant.getField('dependencies');
+        if (dependencies == null) return null;
 
-      final dependencyList = dependencies.toDependencyList(from: from);
-      final allTransitiveDependencies =
-          dependencyList == null
-              ? null
-              : <GeneratorProviderDeclarationElement>{
-                ...dependencyList,
-                ...dependencyList.expand(
-                  (e) => e.annotation.allTransitiveDependencies ?? const {},
-                ),
-              };
+        final dependencyList = dependencies.toDependencyList(from: from);
+        final allTransitiveDependencies =
+            dependencyList == null
+                ? null
+                : <GeneratorProviderDeclarationElement>{
+                  ...dependencyList,
+                  ...dependencyList.expand(
+                    (e) => e.annotation.allTransitiveDependencies ?? const {},
+                  ),
+                };
 
-      return RiverpodAnnotationElement._(
-        keepAlive: keepAlive.toBoolValue()!,
-        element: element,
-        name: name.toStringValue(),
-        dependencies: dependencyList,
-        allTransitiveDependencies: allTransitiveDependencies,
-      );
-    });
+        return RiverpodAnnotationElement._(
+          keepAlive: keepAlive.toBoolValue()!,
+          element: element,
+          name: name.toStringValue(),
+          dependencies: dependencyList,
+          allTransitiveDependencies: allTransitiveDependencies,
+        );
+      },
+      onCycle: () {
+        final owner = element.element2?.displayName ?? '<unknown annotation>';
+        errorReporter(
+          RiverpodAnalysisError.ast(
+            'Circular dependencies are not supported. '
+            'Resolving "$owner" resulted in a dependency cycle.',
+            targetNode: from,
+            code: RiverpodAnalysisErrorCode.providerDependencyListParseError,
+          ),
+        );
+        return null;
+      },
+    );
   }
 
   static RiverpodAnnotationElement? _of(Annotatable element, AstNode from) {

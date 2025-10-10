@@ -129,45 +129,61 @@ class ClassBasedProviderDeclarationElement
     ClassElement2 element,
     AstNode from,
   ) {
-    return _cache(element, () {
-      final riverpodAnnotation = RiverpodAnnotationElement._of(element, from);
-      if (riverpodAnnotation == null) return null;
+    return _cache(
+      element,
+      () {
+        final riverpodAnnotation =
+            RiverpodAnnotationElement._of(element, from);
+        if (riverpodAnnotation == null) return null;
 
-      final buildMethod = element.methods2.firstWhereOrNull(
-        (method) => method.name3 == 'build',
-      );
-
-      if (buildMethod == null) {
-        errorReporter(
-          RiverpodAnalysisError.ast(
-            'No "build" method found. '
-            'Classes annotated with @riverpod must define a method named "build".',
-            targetNode: from,
-            code: RiverpodAnalysisErrorCode.missingNotifierBuild,
-          ),
+        final buildMethod = element.methods2.firstWhereOrNull(
+          (method) => method.name3 == 'build',
         );
 
-        return null;
-      }
+        if (buildMethod == null) {
+          errorReporter(
+            RiverpodAnalysisError.ast(
+              'No "build" method found. '
+              'Classes annotated with @riverpod must define a method named "build".',
+              targetNode: from,
+              code: RiverpodAnalysisErrorCode.missingNotifierBuild,
+            ),
+          );
 
-      final rootUnit = from.root as CompilationUnit;
-      final types = _computeTypes(buildMethod.returnType, rootUnit);
-      if (types == null) {
-        // Error already reported
-        return null;
-      }
+          return null;
+        }
 
-      return ClassBasedProviderDeclarationElement._(
-        name: element.name3!,
-        buildMethod: buildMethod,
-        element: element,
-        annotation: riverpodAnnotation,
-        createdTypeNode: types.createdType,
-        exposedTypeNode: types.exposedType,
-        valueTypeNode: types.valueType,
-        createdType: types.supportedCreatedType,
-      );
-    });
+        final rootUnit = from.root as CompilationUnit;
+        final types = _computeTypes(buildMethod.returnType, rootUnit);
+        if (types == null) {
+          // Error already reported
+          return null;
+        }
+
+        return ClassBasedProviderDeclarationElement._(
+          name: element.name3!,
+          buildMethod: buildMethod,
+          element: element,
+          annotation: riverpodAnnotation,
+          createdTypeNode: types.createdType,
+          exposedTypeNode: types.exposedType,
+          valueTypeNode: types.valueType,
+          createdType: types.supportedCreatedType,
+        );
+      },
+      onCycle: () {
+        final name = element.name3 ?? '<unnamed provider>';
+        errorReporter(
+          RiverpodAnalysisError.ast(
+            'Circular dependencies are not supported. '
+            'The dependency "$name" eventually depends on itself.',
+            targetNode: from,
+            code: RiverpodAnalysisErrorCode.providerDependencyListParseError,
+          ),
+        );
+        return null;
+      },
+    );
   }
 
   @override

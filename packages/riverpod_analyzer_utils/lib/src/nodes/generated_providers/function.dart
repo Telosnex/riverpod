@@ -65,27 +65,43 @@ class FunctionalProviderDeclarationElement
     ExecutableElement2 element,
     AstNode from,
   ) {
-    return _cache(element, () {
-      final riverpodAnnotation = RiverpodAnnotationElement._of(element, from);
-      if (riverpodAnnotation == null) return null;
+    return _cache(
+      element,
+      () {
+        final riverpodAnnotation =
+            RiverpodAnnotationElement._of(element, from);
+        if (riverpodAnnotation == null) return null;
 
-      final rootUnit = from.root as CompilationUnit;
-      final types = _computeTypes(element.returnType, rootUnit);
-      if (types == null) {
-        // Error already reported
+        final rootUnit = from.root as CompilationUnit;
+        final types = _computeTypes(element.returnType, rootUnit);
+        if (types == null) {
+          // Error already reported
+          return null;
+        }
+
+        return FunctionalProviderDeclarationElement._(
+          name: element.name3!,
+          annotation: riverpodAnnotation,
+          element: element,
+          createdTypeNode: types.createdType,
+          exposedTypeNode: types.exposedType,
+          valueTypeNode: types.valueType,
+          createdType: types.supportedCreatedType,
+        );
+      },
+      onCycle: () {
+        final name = element.name3 ?? '<unnamed provider>';
+        errorReporter(
+          RiverpodAnalysisError.ast(
+            'Circular dependencies are not supported. '
+            'The dependency "$name" eventually depends on itself.',
+            targetNode: from,
+            code: RiverpodAnalysisErrorCode.providerDependencyListParseError,
+          ),
+        );
         return null;
-      }
-
-      return FunctionalProviderDeclarationElement._(
-        name: element.name3!,
-        annotation: riverpodAnnotation,
-        element: element,
-        createdTypeNode: types.createdType,
-        exposedTypeNode: types.exposedType,
-        valueTypeNode: types.valueType,
-        createdType: types.supportedCreatedType,
-      );
-    });
+      },
+    );
   }
 
   @override

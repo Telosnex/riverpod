@@ -62,14 +62,47 @@ extension RawTypeX on DartType {
 }
 
 class _Cache<CachedT> {
-  final _cacheExpando = Expando<(Object?,)>();
+  final _cacheExpando = Expando<(Object?, bool)>();
 
-  CachedT call(Object e, CachedT Function() create) {
+  CachedT call(
+    Object e,
+    CachedT Function() create, {
+    CachedT Function()? onCycle,
+  }) {
     final existing = _cacheExpando[e];
-    if (existing != null) return existing.$1 as CachedT;
+    if (existing != null) {
+      final (value, isComputing) = existing;
+      if (!isComputing) return value as CachedT;
 
-    final created = create();
-    _cacheExpando[e] = (created,);
-    return created;
+      if (onCycle != null) {
+        final result = onCycle();
+        _cacheExpando[e] = (result, false);
+        return result;
+      }
+
+      throw _CacheCircularDependencyError(e);
+    }
+
+    _cacheExpando[e] = (null, true);
+    try {
+      final created = create();
+      _cacheExpando[e] = (created, false);
+      return created;
+    } finally {
+      final current = _cacheExpando[e];
+      if (current case (_, true)) {
+        _cacheExpando[e] = null;
+      }
+    }
   }
+}
+
+final class _CacheCircularDependencyError extends Error {
+  _CacheCircularDependencyError(this.object);
+
+  final Object object;
+
+  @override
+  String toString() =>
+      '_CacheCircularDependencyError: Circular dependency detected while computing "$object".';
 }
