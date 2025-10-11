@@ -66,7 +66,7 @@ class FunctionalProviderDeclarationElement
     AstNode from,
   ) {
     return _cache(
-      element,
+      _providerCacheKey(element),
       () {
         final riverpodAnnotation =
             RiverpodAnnotationElement._of(element, from);

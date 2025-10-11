@@ -191,6 +191,111 @@ extension on AccumulatedDependencyList {
       node;
 }
 
+const _maxDependencyCycleDepth = 64;
+
+String _formatDependencyCycle(List<GeneratorProviderDeclarationElement> path) {
+  if (path.isEmpty) return '';
+
+  final buffer = StringBuffer();
+  for (var i = 0; i < path.length; i++) {
+    if (i > 0) buffer.write(' → ');
+    buffer.write(path[i].name);
+  }
+  return buffer.toString();
+}
+
+AstNode? _dependencyNodeFor(
+  AccumulatedDependencyList list,
+  GeneratorProviderDeclarationElement provider,
+) {
+  final dependencies = list.allDependencies;
+  if (dependencies == null) return null;
+
+  for (final dependency in dependencies) {
+    if (_sameProvider(dependency.provider, provider)) {
+      return dependency.node;
+    }
+  }
+
+  return null;
+}
+
+bool _sameProvider(
+  ProviderDeclarationElement? a,
+  ProviderDeclarationElement? b,
+) {
+  if (a == null || b == null) return false;
+  return identical(a.element, b.element);
+}
+
+List<GeneratorProviderDeclarationElement>? _findDependencyCyclePath(
+  GeneratorProviderDeclarationElement root,
+) {
+  final rootKey = _providerKey(root);
+  if (rootKey == null) return null;
+
+  final stack = <Object?>{rootKey};
+  final path = <GeneratorProviderDeclarationElement>[root];
+
+  return _findDependencyCyclePathRecursive(
+    current: root,
+    target: root,
+    path: path,
+    stack: stack,
+    depth: 0,
+  );
+}
+
+List<GeneratorProviderDeclarationElement>? _findDependencyCyclePathRecursive({
+  required GeneratorProviderDeclarationElement current,
+  required GeneratorProviderDeclarationElement target,
+  required List<GeneratorProviderDeclarationElement> path,
+  required Set<Object?> stack,
+  required int depth,
+}) {
+  if (depth >= _maxDependencyCycleDepth) {
+    return null;
+  }
+
+  final dependencies = current.annotation.dependencies;
+  if (dependencies == null) return null;
+
+  for (final dependency in dependencies) {
+    final key = _providerKey(dependency);
+    if (key == null) continue;
+
+    if (_sameProvider(dependency, target)) {
+      return [...path, dependency];
+    }
+
+    if (stack.contains(key)) {
+      continue;
+    }
+
+    stack.add(key);
+    path.add(dependency);
+
+    final cycle = _findDependencyCyclePathRecursive(
+      current: dependency,
+      target: target,
+      path: path,
+      stack: stack,
+      depth: depth + 1,
+    );
+
+    if (cycle != null) {
+      return cycle;
+    }
+
+    path.removeLast();
+    stack.remove(key);
+  }
+
+  return null;
+}
+
+Object? _providerKey(ProviderDeclarationElement provider) => provider.element;
+
 class ProviderDependencies extends RiverpodLintRule {
   const ProviderDependencies() : super(code: _code);
 
@@ -258,42 +363,105 @@ class ProviderDependencies extends RiverpodLintRule {
           missingDependenciesMap[provider] = dependency;
         }
       }
-      final missingDependencies =
-          missingDependenciesMap.values.toList(growable: false);
+      final missingDependencies = missingDependenciesMap.values.toList(
+        growable: false,
+      );
 
-      unusedDependencies ??= const [];
-      if (unusedDependencies.isEmpty && missingDependencies.isEmpty) return;
+      unusedDependencies ??= const <AccumulatedDependency>[];
 
-      final message = StringBuffer();
+      final providerElement = list.riverpod?.providerElement;
+      final cyclePath =
+          providerElement == null
+              ? null
+              : _findDependencyCyclePath(providerElement);
+
+      if (unusedDependencies.isEmpty &&
+          missingDependencies.isEmpty &&
+          cyclePath == null) {
+        return;
+      }
+
+      final messageParts = <String>[];
       if (unusedDependencies.isNotEmpty) {
-        message.write('Unused dependencies: ');
-        message.writeAll(unusedDependencies.map((e) => e.provider.name), ', ');
+        messageParts.add(
+          'Unused dependencies: '
+          '${unusedDependencies.map((e) => e.provider.name).join(', ')}',
+        );
       }
       if (missingDependencies.isNotEmpty) {
-        if (unusedDependencies.isNotEmpty) {
-          message.write(' | ');
-        }
-        message.write('Missing dependencies: ');
-        message.writeAll(missingDependencies.map((e) => e.provider.name), ', ');
+        messageParts.add(
+          'Missing dependencies: '
+          '${missingDependencies.map((e) => e.provider.name).join(', ')}',
+        );
       }
+
+      final cycleDescription =
+          cyclePath == null ? null : _formatDependencyCycle(cyclePath);
+
+      if (cycleDescription != null) {
+        messageParts.add(
+          cycleDescription.isEmpty
+              ? 'Circular dependency detected'
+              : 'Circular dependency: $cycleDescription',
+        );
+      }
+
+      final message = messageParts.join(' | ');
 
       late final unit = list.node.thisOrAncestorOfType<CompilationUnit>();
       late final source = unit?.declaredFragment?.source;
 
+      final contextDiagnostics = <DiagnosticMessage>[
+        for (final dependency in missingDependencies)
+          if (source != null)
+            _MyDiagnostic(
+              message: dependency.provider.name,
+              filePath: source.fullName,
+              offset: dependency.node.offset,
+              length: dependency.node.length,
+            ),
+      ];
+
+      if (cyclePath != null && source != null) {
+        final firstStep = cyclePath.length > 1 ? cyclePath[1] : null;
+        final cycleNode =
+            firstStep == null ? null : _dependencyNodeFor(list, firstStep);
+
+        if (cycleNode != null) {
+          contextDiagnostics.add(
+            _MyDiagnostic(
+              message:
+                  cycleDescription == null || cycleDescription.isEmpty
+                      ? 'Part of circular dependency'
+                      : 'Part of circular dependency: $cycleDescription',
+              filePath: source.fullName,
+              offset: cycleNode.offset,
+              length: cycleNode.length,
+            ),
+          );
+        }
+
+        if (firstStep != null && _sameProvider(providerElement, firstStep)) {
+          for (final usage in usedDependencies) {
+            if (_sameProvider(usage.provider, firstStep)) {
+              contextDiagnostics.add(
+                _MyDiagnostic(
+                  message: 'Provider references itself here (part of cycle).',
+                  filePath: source.fullName,
+                  offset: usage.node.offset,
+                  length: usage.node.length,
+                ),
+              );
+            }
+          }
+        }
+      }
+
       reporter.atNode(
         list.target,
         _code,
-        arguments: [message.toString()],
-        contextMessages: [
-          for (final dependency in missingDependencies)
-            if (source != null)
-              _MyDiagnostic(
-                message: dependency.provider.name,
-                filePath: source.fullName,
-                offset: dependency.node.offset,
-                length: dependency.node.length,
-              ),
-        ],
+        arguments: [message],
+        contextMessages: contextDiagnostics,
         data: _Data(usedDependencies: usedDependencies, list: list),
       );
     });

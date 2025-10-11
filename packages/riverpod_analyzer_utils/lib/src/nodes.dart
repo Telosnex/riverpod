@@ -12,7 +12,6 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/dart/element/type_provider.dart';
-import 'package:analyzer/src/dart/element/element.dart' as analyzer;
 import 'package:analyzer_buffer/analyzer_buffer.dart';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
@@ -63,54 +62,73 @@ extension RawTypeX on DartType {
 }
 
 class _Cache<CachedT> {
-  final _cacheExpando = Expando<(Object?, bool)>();
+  final _entries = <Object, _CacheEntry<CachedT>>{};
 
   CachedT call(
-    Object e,
+    Object key,
     CachedT Function() create, {
     CachedT Function()? onCycle,
   }) {
-    final existing = _cacheExpando[e];
+    final existing = _entries[key];
     if (existing != null) {
-      final (value, isComputing) = existing;
-      if (!isComputing) return value as CachedT;
+      if (!existing.isComputing) {
+        return existing.value as CachedT;
+      }
 
       if (onCycle != null) {
         final result = onCycle();
-        _cacheExpando[e] = (result, false);
+        existing.value = result;
+        existing.isComputing = false;
         return result;
       }
 
-      throw _CacheCircularDependencyError(e);
+      throw _CacheCircularDependencyError(key);
     }
 
-    _cacheExpando[e] = (null, true);
+    final entry = _CacheEntry<CachedT>(isComputing: true);
+    _entries[key] = entry;
+    var entryRemovedDuringCompute = false;
+    late final CachedT result;
     try {
       final created = create();
-      _cacheExpando[e] = (created, false);
-      return created;
+      entry
+        ..value = created
+        ..isComputing = false;
+      result = created;
     } finally {
-      final current = _cacheExpando[e];
-      if (current case (_, true)) {
-        _cacheExpando[e] = null;
+      final current = _entries[key];
+      if (current == null) {
+        entryRemovedDuringCompute = true;
+      } else if (current.isComputing) {
+        _entries.remove(key);
       }
     }
+
+    if (entryRemovedDuringCompute) {
+      throw StateError('Cache entry was removed while computing "$key".');
+    }
+
+    return result;
   }
+}
+
+final class _CacheEntry<CachedT> {
+  _CacheEntry({required this.isComputing, this.value});
+
+  CachedT? value;
+  bool isComputing;
 }
 
 final class _CacheCircularDependencyError extends Error {
-  _CacheCircularDependencyError(this.object);
+  _CacheCircularDependencyError(this.key);
 
-  final Object object;
+  final Object key;
 
   @override
   String toString() =>
-      '_CacheCircularDependencyError: Circular dependency detected while computing "$object".';
+      '_CacheCircularDependencyError: Circular dependency detected while computing "$key".';
 }
 
-Object _annotationCacheKey(ElementAnnotation annotation) {
-  if (annotation is analyzer.ElementAnnotationImpl) {
-    return annotation.annotationAst;
-  }
-  return annotation;
-}
+Object _annotationCacheKey(ElementAnnotation annotation) => annotation;
+
+Object _providerCacheKey(Element2 element) => element;
