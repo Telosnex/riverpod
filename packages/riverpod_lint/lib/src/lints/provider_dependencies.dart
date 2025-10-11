@@ -14,6 +14,17 @@ import '../imports.dart';
 import '../object_utils.dart';
 import '../riverpod_custom_lint.dart';
 
+const _debugLoggingEnabled = bool.fromEnvironment(
+  'RIVERPOD_LINT_DEBUG',
+  defaultValue: false,
+);
+
+void _logLint(String message) {
+  if (!_debugLoggingEnabled) return;
+  // ignore: avoid_print
+  print('[riverpod_lint][provider_dependencies] $message');
+}
+
 const _fixDependenciesPriority = 100;
 
 class _LocatedProvider {
@@ -254,8 +265,17 @@ List<GeneratorProviderDeclarationElement>? _findDependencyCyclePathRecursive({
   required int depth,
 }) {
   if (depth >= _maxDependencyCycleDepth) {
+    _logLint(
+      '    Max depth reached while searching cycle from ${target.name}. '
+      'Current path: ${_formatDependencyCycle(path)}',
+    );
     return null;
   }
+
+  _logLint(
+    '    Visiting ${current.name} (depth=$depth, path='
+    '${_formatDependencyCycle(path)})',
+  );
 
   final dependencies = current.annotation.dependencies;
   if (dependencies == null) return null;
@@ -265,10 +285,14 @@ List<GeneratorProviderDeclarationElement>? _findDependencyCyclePathRecursive({
     if (key == null) continue;
 
     if (_sameProvider(dependency, target)) {
+      _logLint(
+        '    Cycle completed: ${_formatDependencyCycle([...path, dependency])}',
+      );
       return [...path, dependency];
     }
 
     if (stack.contains(key)) {
+      _logLint('    Skipping ${dependency.name} (already on stack)');
       continue;
     }
 
@@ -284,11 +308,16 @@ List<GeneratorProviderDeclarationElement>? _findDependencyCyclePathRecursive({
     );
 
     if (cycle != null) {
+      _logLint(
+        '    Returning cycle from ${dependency.name}: '
+        '${_formatDependencyCycle(cycle)}',
+      );
       return cycle;
     }
 
     path.removeLast();
     stack.remove(key);
+    _logLint('    Backtracking from ${dependency.name}');
   }
 
   return null;
@@ -328,64 +357,145 @@ class ProviderDependencies extends RiverpodLintRule {
         list,
         onProvider: (locatedProvider, list, {required checkOverrides}) {
           final provider = locatedProvider.provider;
-          if (provider is! GeneratorProviderDeclarationElement) return;
-          if (!provider.isScoped) return;
+          // if (!provider.isScoped) return;
 
-          // Check if the provider is overridden. If it is, the provider doesn't
-          // count towards the unused/missing dependencies
-          if (checkOverrides &&
-              list.isSafelyAccessibleAfterOverrides(provider)) {
+          if (provider is GeneratorProviderDeclarationElement) {
+            // Check if the provider is overridden. If it is, the provider doesn't
+            // count towards the unused/missing dependencies
+            if (checkOverrides &&
+                list.isSafelyAccessibleAfterOverrides(provider)) {
+              return;
+            }
+
+            usedDependencies.add(locatedProvider);
             return;
           }
 
+          // Non-generator providers (e.g. manually declared providers) do not
+          // participate in override checks. We still record them so that
+          // @Dependencies on arbitrary nodes can be validated.
           usedDependencies.add(locatedProvider);
         },
       );
 
       list.node.accept(visitor);
 
-      var unusedDependencies =
-          list.allDependencies
-              ?.where(
-                (dependency) =>
-                    !usedDependencies.any(
-                      (e) => e.provider == dependency.provider,
-                    ),
-              )
-              .toList();
-      final missingDependenciesMap =
-          <ProviderDeclarationElement, _LocatedProvider>{};
-      for (final dependency in usedDependencies) {
-        final provider = dependency.provider;
-        final isMissing =
-            list.allDependencies?.every((e) => e.provider != provider) ?? true;
-        if (isMissing && !missingDependenciesMap.containsKey(provider)) {
-          missingDependenciesMap[provider] = dependency;
-        }
-      }
-      final missingDependencies = missingDependenciesMap.values.toList(
-        growable: false,
+      final providerElement = list.riverpod?.providerElement;
+      final providerName =
+          providerElement?.name ??
+          list.riverpod?.annotation.element.name ??
+          list.riverpod?.annotation.node.name?.toSource() ??
+          list.node.toSource().split(RegExp('[({]')).first.trim();
+      final locationUnit = list.node.thisOrAncestorOfType<CompilationUnit>();
+      final locationSource = locationUnit?.declaredFragment?.source;
+      final location =
+          locationSource == null
+              ? '<unknown location>'
+              : '${locationSource.fullName}:${list.node.offset}';
+      _logLint('Analyzing "$providerName" at $location');
+
+      final providerElementDisplay =
+          providerElement?.element?.displayName ??
+          providerElement?.name ??
+          '<none>';
+      _logLint(
+        '  Provider element: $providerElementDisplay '
+        '(${providerElement?.runtimeType ?? 'null'})',
       );
 
-      unusedDependencies ??= const <AccumulatedDependency>[];
+      if (providerElement == null) {
+        _logLint(
+          '  No provider element associated with "$providerName". '
+          'Node type: ${list.node.runtimeType}',
+        );
+      }
 
-      final providerElement = list.riverpod?.providerElement;
+      final manualDependencies = list.dependencies?.dependencies?.values
+          ?.map((e) => e.provider.name)
+          .toList(growable: false);
+      if (manualDependencies != null && manualDependencies.isNotEmpty) {
+        _logLint('  Manual @Dependencies: ${manualDependencies.join(', ')}');
+      }
+
+      final declaredDependencyNames =
+          providerElement != null
+              ? (list.allDependencies
+                      ?.map((e) => e.provider.name)
+                      .toList(growable: false) ??
+                  const <String>[])
+              : (manualDependencies ?? const <String>[]);
+
+      if (declaredDependencyNames.isEmpty) {
+        _logLint('  Declared dependencies: <none>');
+      } else {
+        _logLint(
+          '  Declared dependencies: ${declaredDependencyNames.join(', ')}',
+        );
+      }
+
+      final usedDependencyNames =
+          usedDependencies.map((e) => e.provider.name).toSet();
+      if (usedDependencyNames.isEmpty) {
+        _logLint('  Used dependencies: <none>');
+      } else {
+        _logLint(
+          '  Used dependencies: '
+          '${usedDependencyNames.join(', ')}',
+        );
+      }
+
+      final declaredDependencySet = declaredDependencyNames.toSet();
+      final missingDependencies = [
+        for (final dependency in usedDependencies)
+          if (!declaredDependencySet.contains(dependency.provider.name))
+            dependency,
+      ];
+      final unusedDependencyNames = [
+        for (final name in declaredDependencyNames)
+          if (!usedDependencyNames.contains(name)) name,
+      ];
+
       final cyclePath =
           providerElement == null
               ? null
               : _findDependencyCyclePath(providerElement);
 
-      if (unusedDependencies.isEmpty &&
+      if (unusedDependencyNames.isEmpty && missingDependencies.isEmpty) {
+        _logLint('  No unused or missing dependencies identified.');
+      } else {
+        if (unusedDependencyNames.isNotEmpty) {
+          _logLint(
+            '  Unused dependencies: '
+            '${unusedDependencyNames.join(', ')}',
+          );
+        }
+        if (missingDependencies.isNotEmpty) {
+          _logLint(
+            '  Missing dependencies: '
+            '${missingDependencies.map((e) => e.provider.name).join(', ')}',
+          );
+        }
+      }
+
+      if (cyclePath != null) {
+        _logLint(
+          '  Circular dependency detected: '
+          '${_formatDependencyCycle(cyclePath)}',
+        );
+      }
+
+      if (unusedDependencyNames.isEmpty &&
           missingDependencies.isEmpty &&
           cyclePath == null) {
+        _logLint('  No diagnostics emitted for "$providerName".');
         return;
       }
 
       final messageParts = <String>[];
-      if (unusedDependencies.isNotEmpty) {
+      if (unusedDependencyNames.isNotEmpty) {
         messageParts.add(
           'Unused dependencies: '
-          '${unusedDependencies.map((e) => e.provider.name).join(', ')}',
+          '${unusedDependencyNames.join(', ')}',
         );
       }
       if (missingDependencies.isNotEmpty) {
@@ -407,8 +517,10 @@ class ProviderDependencies extends RiverpodLintRule {
       }
 
       final message = messageParts.join(' | ');
+      _logLint('  Emitting diagnostic: $message');
 
-      late final unit = list.node.thisOrAncestorOfType<CompilationUnit>();
+      late final unit =
+          locationUnit ?? list.node.thisOrAncestorOfType<CompilationUnit>();
       late final source = unit?.declaredFragment?.source;
 
       final contextDiagnostics = <DiagnosticMessage>[

@@ -129,7 +129,7 @@ class ClassBasedProviderDeclarationElement
     ClassElement2 element,
     AstNode from,
   ) {
-    return _cache(
+    return _cache.getEntry(
       _providerCacheKey(element),
       () {
         final riverpodAnnotation =

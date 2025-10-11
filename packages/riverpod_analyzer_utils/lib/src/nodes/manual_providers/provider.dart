@@ -250,7 +250,7 @@ class ManualProviderDeclarationElement implements ProviderDeclarationElement {
   });
 
   static ManualProviderDeclarationElement? _parse(VariableElement2 element) {
-    return _cache(element, () {
+    return _cache.getEntry(element, () {
       final type = element.type;
       final providerType = parseLegacyProviderType(type);
       // Not a legacy provider

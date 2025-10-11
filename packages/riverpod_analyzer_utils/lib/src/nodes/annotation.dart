@@ -103,9 +103,18 @@ final class RiverpodAnnotationElement {
     ElementAnnotation element,
     AstNode from,
   ) {
-    return _cache(
+    return _cache.getEntry(
       _annotationCacheKey(element),
       () {
+        final ownerName = element.element?.displayName ??
+            element.element2?.displayName ??
+            element.element2?.enclosingElement2?.displayName ??
+            '<unknown provider>';
+        final libraryPath =
+            element.element2?.library2?.uri.toString();
+        _debugLog(
+          'Parsing @Riverpod annotation on $ownerName '          'defined in ${libraryPath ?? '<unknown file>'}',
+        );
         final type = element.element2.cast<ExecutableElement2>()?.returnType;
         if (type == null || !riverpodType.isExactlyType(type)) return null;
 
@@ -122,6 +131,10 @@ final class RiverpodAnnotationElement {
         if (dependencies == null) return null;
 
         final dependencyList = dependencies.toDependencyList(from: from);
+        _debugLog(
+          '  dependencies constant -> '
+          '${dependencyList?.map((e) => e.name).join(', ') ?? '<none>'}',
+        );
         final allTransitiveDependencies =
             dependencyList == null
                 ? null

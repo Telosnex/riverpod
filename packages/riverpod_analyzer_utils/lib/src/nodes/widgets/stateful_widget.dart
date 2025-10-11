@@ -90,7 +90,7 @@ final class StatefulWidgetDeclarationElement extends WidgetDeclarationElement {
     ClassElement2 node,
     AstNode from,
   ) {
-    return _cache(node, () {
+    return _cache.getEntry(node, () {
       final dependencies = DependenciesAnnotationElement._of(node, from);
 
       return StatefulWidgetDeclarationElement(

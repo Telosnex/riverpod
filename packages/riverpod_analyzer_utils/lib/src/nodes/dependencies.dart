@@ -4,7 +4,7 @@ extension on CollectionElement {
   static final _cache = _Cache<ProviderDependency?>();
 
   ProviderDependency? get providerDependency {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       final that = this;
       if (that is! Expression) {
         errorReporter(
@@ -92,7 +92,7 @@ extension on Expression {
   static final _cache = _Cache<ProviderDependencyList?>();
 
   ProviderDependencyList? get providerDependencyList {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       final that = this;
       // explicit null, count as valid value (no dependencies)
       if (that is NullLiteral) {
@@ -132,7 +132,18 @@ final class ProviderDependencyList {
 extension on DartObject {
   /// An element in `@Riverpod(dependencies: [a, b])` or equivalent.
   GeneratorProviderDeclarationElement? toDependency({required AstNode from}) {
-    final functionType = toFunctionValue2();
+    final rawTypeValue = toTypeValue();
+    final rawFunctionValue = toFunctionValue2();
+    final targetNode = switch (from) {
+      Annotation(:final parent?) => parent,
+      _ => from,
+    };
+    _debugLog(
+      'toDependency from ${targetNode.runtimeType} at ${targetNode.offset} '
+      'value=$this type=${rawTypeValue?.getDisplayString(withNullability: true)} '
+      'function=$rawFunctionValue',
+    );
+    final functionType = rawFunctionValue;
     if (functionType != null) {
       final provider = FunctionalProviderDeclarationElement._parse(
         functionType,
@@ -142,8 +153,12 @@ extension on DartObject {
       if (provider != null) return provider;
     }
 
-    final type = toTypeValue();
+    final type = rawTypeValue;
     if (type != null) {
+      _debugLog(
+        'toDependency resolved type ${type.getDisplayString(withNullability: true)} '
+        'element=${type.element3}',
+      );
       final provider = ClassBasedProviderDeclarationElement._parse(
         type.element3! as ClassElement2,
         from,
@@ -292,7 +307,7 @@ extension on InstanceCreationExpression {
   static final _cache = _Cache<AccumulatedDependencyList?>();
 
   AccumulatedDependencyList? get accumulatedDependencies {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       final providerScope = this.providerScope;
       if (providerScope == null) return null;
 
@@ -311,7 +326,7 @@ extension on AnnotatedNode {
   static final _cache = _Cache<AccumulatedDependencyList?>();
 
   AccumulatedDependencyList? get accumulatedDependencies {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       final provider = cast<Declaration>()?.provider;
       // Have State inherit dependencies from its widget
       final state = cast<ClassDeclaration>()?.state;
@@ -349,7 +364,7 @@ extension IdentifierDependenciesX on Identifier {
   static final _cache = _Cache<IdentifierDependencies?>();
 
   IdentifierDependencies? get identifierDependencies {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       final Object? staticElement = element;
       if (staticElement is! Annotatable) return null;
 
@@ -376,7 +391,7 @@ extension NamedTypeDependenciesX on NamedType {
   static final _cache = _Cache<NamedTypeDependencies?>();
 
   NamedTypeDependencies? get typeAnnotationDependencies {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       final Object? staticElement = type?.element3;
       if (staticElement is! Annotatable) return null;
 
@@ -395,7 +410,7 @@ extension DependenciesAnnotatedAnnotatedNodeOfX on AnnotatedNode {
   static final _cache = _Cache<DependenciesAnnotation?>();
 
   DependenciesAnnotation? get dependencies {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       return metadata.map((e) => e.dependencies).nonNulls.firstOrNull;
     }, onCycle: () => null);
   }
@@ -406,7 +421,7 @@ extension DependenciesAnnotatedAnnotatedNodeX on Annotation {
   static final _cache = _Cache<DependenciesAnnotation?>();
 
   DependenciesAnnotation? get dependencies {
-    return _cache(this, () {
+    return _cache.getEntry(this, () {
       final elementAnnotation = annotationOfType(dependenciesType, exact: true);
       if (elementAnnotation == null) return null;
 
@@ -460,7 +475,7 @@ final class DependenciesAnnotationElement {
     ElementAnnotation annotation,
     AstNode from,
   ) {
-    return _cache(
+    return _cache.getEntry(
       _annotationCacheKey(annotation),
       () {
         final type = annotation.element2.cast<ExecutableElement2>()?.returnType;

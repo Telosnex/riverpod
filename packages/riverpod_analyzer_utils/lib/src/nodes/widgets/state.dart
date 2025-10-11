@@ -64,7 +64,7 @@ final class StateDeclarationElement {
   static final _cache = _Cache<StateDeclarationElement>();
 
   static StateDeclarationElement? _parse(ClassElement2 element, AstNode from) {
-    return _cache(element, () {
+    return _cache.getEntry(element, () {
       final widget = _findStateWidget(element);
 
       return StateDeclarationElement._(

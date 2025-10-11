@@ -51,6 +51,11 @@ part 'nodes.g.dart';
 
 const _ast = Object();
 
+void _debugLog(String message) {
+  // ignore: avoid_print
+  print('[riverpod_analyzer_utils] $message');
+}
+
 extension RawTypeX on DartType {
   /// Returns whether this type is a `Raw` typedef from `package:riverpod_annotation`.
   bool get isRaw {
@@ -64,7 +69,7 @@ extension RawTypeX on DartType {
 class _Cache<CachedT> {
   final _entries = <Object, _CacheEntry<CachedT>>{};
 
-  CachedT call(
+  CachedT getEntry(
     Object key,
     CachedT Function() create, {
     CachedT Function()? onCycle,
@@ -97,6 +102,13 @@ class _Cache<CachedT> {
       result = created;
     } finally {
       final current = _entries[key];
+      final isComputing = current?.isComputing ?? false;
+      if (isComputing) {
+        _debugLog(
+          'Cache finalize key=\'${key}\' existing='
+          '${current != null} isComputing=${current?.isComputing}',
+        );
+      }
       if (current == null) {
         entryRemovedDuringCompute = true;
       } else if (current.isComputing) {
@@ -129,6 +141,10 @@ final class _CacheCircularDependencyError extends Error {
       '_CacheCircularDependencyError: Circular dependency detected while computing "$key".';
 }
 
-Object _annotationCacheKey(ElementAnnotation annotation) => annotation;
-
 Object _providerCacheKey(Element2 element) => element;
+
+Object _annotationCacheKey(ElementAnnotation annotation) {
+  final id = annotation.element2?.id;
+  if (id != null) return id;
+  throw StateError('ElementAnnotation has no ID: $annotation');
+}
