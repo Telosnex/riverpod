@@ -113,17 +113,38 @@ class ProviderScheduler {
   void debugNotifyDidBuild(ProviderElement element) {
     if (kDebugMode) {
       final set = _builtWithinFrame;
-      if (set != null && !set.add(element)) {
-        throw StateError(
-          'Tried to rebuild ${element.origin} multiple times in the same frame',
+      if (set != null) {
+        final stacks = _builtWithinFrameStacks;
+        assert(
+          stacks != null,
+          'Expected debug stack map to be initialised when tracking built providers.',
         );
+
+        if (set.add(element)) {
+          stacks![element] = StackTrace.current;
+        } else {
+          final previousStack = stacks?[element];
+          throw StateError(
+            'Tried to rebuild ${element.origin} multiple times in the same frame.\n'
+            'This usually happens when a provider calls ref.invalidateSelf or ref.refresh '
+            'while it is already building.\n'
+            'If you need to trigger another rebuild, schedule it for later (for example '
+            'using Future.microtask(() => ref.invalidateSelf())).\n'
+            '${previousStack == null ? '' : 'Previous build stack:\n$previousStack\n'}'
+            'Current stack:\n${StackTrace.current}',
+          );
+        }
       }
     }
   }
 
   Set<ProviderElement>? _builtWithinFrame;
+  Map<ProviderElement, StackTrace>? _builtWithinFrameStacks;
   void _performRefresh() {
-    if (kDebugMode) _builtWithinFrame = {};
+    if (kDebugMode) {
+      _builtWithinFrame = {};
+      _builtWithinFrameStacks = {};
+    }
 
     /// No need to traverse entries from top to bottom, because refreshing a
     /// child will automatically refresh its parent when it will try to read it
@@ -132,7 +153,10 @@ class ProviderScheduler {
       if (element.isActive) element.flush();
     }
 
-    if (kDebugMode) _builtWithinFrame = null;
+    if (kDebugMode) {
+      _builtWithinFrame = null;
+      _builtWithinFrameStacks = null;
+    }
   }
 
   /// Schedules a provider to be disposed.
