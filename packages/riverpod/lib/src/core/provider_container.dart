@@ -1115,6 +1115,11 @@ final class ProviderContainer implements Node, MutationTarget {
     $ProviderBaseImpl<StateT> provider,
   ) {
     if (_disposed) {
+      final parent = _parent;
+      if (parent != null) {
+        return parent._readProviderElement(provider);
+      }
+
       throw StateError(
         'Tried to read a provider from a ProviderContainer that was already disposed',
       );
