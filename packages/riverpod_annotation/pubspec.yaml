@@ -16,10 +16,15 @@ environment:
   sdk: ^3.7.0
 
 resolution: workspace
+publish_to: none
 
 dependencies:
   meta: ^1.15.0
-  riverpod: 3.0.3
+  riverpod:
+    git:
+      url: https://github.com/Telosnex/riverpod.git
+      path: packages/riverpod
+      ref: master
 
 dev_dependencies:
   test: ^1.21.0
