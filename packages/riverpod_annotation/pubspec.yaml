@@ -24,7 +24,7 @@ dependencies:
     git:
       url: https://github.com/Telosnex/riverpod.git
       path: packages/riverpod
-      ref: master
+      ref: app_deploy
 
 dev_dependencies:
   test: ^1.21.0
