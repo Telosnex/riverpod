@@ -60,8 +60,12 @@ class ProviderScheduler {
     return _defaultVsync;
   }
 
+  // Use sets to avoid scheduling the same provider multiple times within the
+  // same frame. Duplicates would otherwise cause multiple flush/build cycles
+  // in a single _performRefresh pass, triggering debug assertions such as
+  // "Tried to rebuild X multiple times in the same frame".
   final _stateToDispose = <ProviderElement>[];
-  final stateToRefresh = <ProviderElement>[];
+  final Set<ProviderElement> stateToRefresh = <ProviderElement>{};
 
   Completer<void>? _pendingTaskCompleter;
 
@@ -148,8 +152,13 @@ class ProviderScheduler {
 
     /// No need to traverse entries from top to bottom, because refreshing a
     /// child will automatically refresh its parent when it will try to read it
-    for (var i = 0; i < stateToRefresh.length; i++) {
-      final element = stateToRefresh[i];
+    ///
+    /// We drain the set with a while loop instead of for-in because flush()
+    /// can trigger more providers to be scheduled (adding to stateToRefresh),
+    /// and modifying a Set during for-in iteration throws ConcurrentModificationError.
+    while (stateToRefresh.isNotEmpty) {
+      final element = stateToRefresh.first;
+      stateToRefresh.remove(element);
       if (element.isActive) element.flush();
     }
 
