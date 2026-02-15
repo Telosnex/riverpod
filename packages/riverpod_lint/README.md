@@ -42,7 +42,8 @@ Riverpod_lint adds various warnings with quick fixes and refactoring options, su
 - [All the lints](#all-the-lints)
   - [missing\_provider\_scope](#missing_provider_scope)
   - [provider\_dependencies (riverpod\_generator only)](#provider_dependencies-riverpod_generator-only)
-  - [scoped\_providers\_should\_specify\_dependencies (generator only)](#scoped_providers_should_specify_dependencies-generator-only)
+  - [consumer\_dependencies (experimental)](#consumer_dependencies-experimental)
+  - [scoped\_providers\_should\_specify\_dependencies (experimental)](#scoped_providers_should_specify_dependencies-experimental)
   - [avoid\_build\_context\_in\_providers (riverpod\_generator only)](#avoid_build_context_in_providers-riverpod_generator-only)
   - [provider\_parameters](#provider_parameters)
   - [avoid\_public\_notifier\_properties](#avoid_public_notifier_properties)
@@ -190,10 +191,11 @@ void main() {
 
 ### provider_dependencies (riverpod_generator only)
 
-If a provider depends on providers which specify `dependencies`, they should
-specify `dependencies` and include all the scoped providers.
+If a provider defined with `@riverpod` depends on scoped providers, it should
+specify `dependencies` and include all of them. This keeps the generated
+provider correctly scoped and ensures the dependency graph is explicit.
 
-This lint only works for providers using the `@riverpod` annotation.
+This lint only runs on providers using the `@riverpod` annotation.
 
 Consider the following providers:
 
@@ -202,7 +204,7 @@ Consider the following providers:
 @riverpod
 int root(Ref ref) => 0;
 
-// A possibly scoped provider
+// A scoped provider
 @Riverpod(dependencies: [])
 int scoped(Ref ref) => 0;
 ```
@@ -210,29 +212,82 @@ int scoped(Ref ref) => 0;
 **Good**:
 
 ```dart
-// No dependencies used, no need to specify "dependencies"
+// No scoped dependencies used, no need to specify "dependencies"
 @riverpod
 int example(Ref ref) => 0;
 
-// We can specify an empty "dependencies" list if we wish to.
-// This marks the provider as "scoped".
+// An explicit empty list is fine too – it marks the provider as scoped.
 @Riverpod(dependencies: [])
-int example(Ref ref) => 0;
+int alsoScoped(Ref ref) => 0;
 
 @riverpod
-void example(Ref ref) {
-  // rootProvider is not scoped, no need to specify it as "dependencies"
+void readsRootOnly(Ref ref) {
+  // rootProvider is not scoped, so it does not need to appear in dependencies.
   ref.watch(rootProvider);
 }
 
 @Riverpod(dependencies: [scoped])
-void example(Ref ref) {
-  // scopedProvider is scoped and as such specifying "dependencies" is required.
+void readsScoped(Ref ref) {
+  // scopedProvider is scoped and must be declared in dependencies.
+  ref.watch(scopedProvider);
+}
+```
+
+**Bad**:
+
+```dart
+// scopedProvider isn't used and should therefore not be listed
+@Riverpod(dependencies: [scoped])
+int unusedDependency(Ref ref) => 0;
+
+@Riverpod(dependencies: [])
+void missingScoped(Ref ref) {
+  // scopedProvider is used but not listed in dependencies.
   ref.watch(scopedProvider);
 }
 
-// For non-provider objects that use scoped providers, we can use `@Dependencies`
-// for similar purposes.
+@Riverpod(dependencies: [root])
+void rootIsNotScoped(Ref ref) {
+  // rootProvider is not scoped and should not be listed.
+  ref.watch(rootProvider);
+}
+```
+
+### consumer_dependencies (experimental)
+
+When a widget, class, or function consumes scoped providers, it should declare
+those dependencies with the experimental `@Dependencies` annotation. This lint
+is **enabled by default** so that existing projects keep the same coverage as
+previous releases. If you need to opt out while the API is experimental,
+disable it in your `analysis_options.yaml`:
+
+```yaml
+custom_lint:
+  rules:
+    - consumer_dependencies: false
+```
+
+The annotation currently lives in
+`package:riverpod_annotation/experimental/scope.dart`.
+
+With the same providers as above:
+
+```dart
+@riverpod
+int root(Ref ref) => 0;
+
+@Riverpod(dependencies: [])
+int scoped(Ref ref) => 0;
+```
+
+**Good**:
+
+```dart
+// Consumers that do not read scoped providers do not need an annotation.
+void readsOnlyRoot(WidgetRef ref) {
+  ref.watch(rootProvider);
+}
+
 @Dependencies([scoped])
 class BookView extends ConsumerWidget {
   @override
@@ -242,48 +297,47 @@ class BookView extends ConsumerWidget {
   }
 }
 
-// Alternatively, widgets specifically can opt to override scoped providers
-// using `ProviderScope`:
 ProviderScope(
   overrides: [
     scopedProvider.overrideWithValue(42),
   ],
-  // Even though BookView uses "scopedProvider", the linter won't complain
-  // as we override the provider.
+  // Even though BookView watches scopedProvider, overriding it makes the
+  // dependency explicit and keeps the lint quiet.
   child: BookView(),
-)
+);
 ```
 
 **Bad**:
 
 ```dart
-// scopedProvider isn't used and should therefore not be listed
-@Riverpod(dependencies: [scoped])
-int example(Ref ref) => 0;
-
-@Riverpod(dependencies: [])
-void example(Ref ref) {
-  // scopedProvider is used but not present in the list of dependencies
-  ref.watch(scopedProvider);
-}
-
-@Riverpod(dependencies: [root])
-void example(Ref ref) {
-  // rootProvider is not a scoped provider. As such it shouldn't be listed in "dependencies"
-  ref.watch(rootProvider);
-}
-
 class BookView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // If a function/class uses a scoped provider, they must specify `@Dependencies`
+    // Consumers of scoped providers must declare @Dependencies.
     final selectedBookID = ref.watch(scopedProvider);
     return Text(selectedBookID.toString());
   }
 }
+
+@Dependencies([])
+void missingScopedDependency(WidgetRef ref) {
+  // scopedProvider is missing from the annotation.
+  ref.watch(scopedProvider);
+}
 ```
 
-### scoped_providers_should_specify_dependencies (generator only)
+### scoped_providers_should_specify_dependencies (experimental)
+
+This rule is registered alongside
+[consumer_dependencies](#consumer_dependencies-experimental). You can disable the
+rules using the standard `custom_lint` configuration:
+
+```yaml
+custom_lint:
+  rules:
+    - consumer_dependencies: false
+    - scoped_providers_should_specify_dependencies: false
+```
 
 Providers that do not specify "dependencies" shouldn't be overridden in a
 `ProviderScope`/`ProviderContainer` that is possibly not at the root of the tree.

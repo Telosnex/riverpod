@@ -1040,37 +1040,73 @@ The provider ${_debugCurrentlyBuildingElement!.origin} modified $origin while bu
   void _assertValidInternalPauseState() {
     if (!kDebugMode) return;
 
-    final closedSubs = [
-      ...?subscriptions,
-      ...?dependents,
-      ...weakDependents,
-      ...?_inactiveSubscriptions,
-    ].where((e) => e.closed);
-    if (closedSubs.isNotEmpty) {
+    // Check for closed subscriptions without allocating a merged list.
+    // Previous implementation spread all 4 lists into a new List on every
+    // call, which was O(n) in allocation + iteration. This is called 2×
+    // per _onChangeSubscription, so it dominated debug-mode profiles.
+    bool hasClosed(List<ProviderSubscription>? subs) {
+      if (subs == null) return false;
+      for (var i = 0; i < subs.length; i++) {
+        if (subs[i].closed) return true;
+      }
+      return false;
+    }
+
+    bool hasClosedImpl(
+      List<ProviderSubscriptionImpl<Object?>>? subs,
+    ) {
+      if (subs == null) return false;
+      for (var i = 0; i < subs.length; i++) {
+        if (subs[i].closed) return true;
+      }
+      return false;
+    }
+
+    if (hasClosed(subscriptions) ||
+        hasClosedImpl(dependents) ||
+        hasClosedImpl(weakDependents) ||
+        hasClosed(_inactiveSubscriptions)) {
       throw StateError(
         'Some leftover closed subscriptions were found.\n'
         'This is likely due to a bug in the provider implementation.\n$this',
       );
     }
 
-    final actualPausedCount = pausedActiveSubscriptionCount;
-    final expectedPausedCount =
-        dependents
-            ?.where((sub) => !sub.weak && (sub.isPaused || !sub.active))
-            .length ??
-        0;
+    // Count paused dependents without allocating a filtered iterable.
+    var expectedPausedCount = 0;
+    final deps = dependents;
+    if (deps != null) {
+      for (var i = 0; i < deps.length; i++) {
+        final sub = deps[i];
+        if (!sub.weak && (sub.isPaused || !sub.active)) {
+          expectedPausedCount++;
+        }
+      }
+    }
 
     assert(
-      actualPausedCount == expectedPausedCount,
+      pausedActiveSubscriptionCount == expectedPausedCount,
       'Expected pausedActiveSubscriptionCount to be $expectedPausedCount, '
-      'but was $actualPausedCount. '
+      'but was $pausedActiveSubscriptionCount. '
       'This is likely due to a bug in the provider implementation.\n$this',
     );
   }
 
   void _assertContainsDependent(ProviderSubscription sub) {
     assert(
-      sub.impl.$hasParent || [...weakDependents, ...?dependents].contains(sub),
+      () {
+        if (sub.impl.$hasParent) return true;
+        for (var i = 0; i < weakDependents.length; i++) {
+          if (identical(weakDependents[i], sub)) return true;
+        }
+        final deps = dependents;
+        if (deps != null) {
+          for (var i = 0; i < deps.length; i++) {
+            if (identical(deps[i], sub)) return true;
+          }
+        }
+        return false;
+      }(),
       '''
 Expected subscription to be part of this provider element, but it was not found.
 Sub:

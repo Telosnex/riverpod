@@ -1,6 +1,9 @@
 ## 3.0.3 - 2025-10-09
 
 - `riverpod` upgraded to `3.0.3`
+- Restored `provider_dependencies` to only target provider declarations.
+- Added experimental `consumer_dependencies` lint (enabled by default; disable via `custom_lint -> riverpod_lint -> enable_consumer_dependencies: false`).
+- `scoped_providers_should_specify_dependencies` now follows the same configuration flag.
 
 ## 3.0.2 - 2025-10-07
 

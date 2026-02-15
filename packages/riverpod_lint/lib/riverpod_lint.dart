@@ -11,6 +11,7 @@ import 'src/lints/async_value_nullable_pattern.dart';
 import 'src/lints/avoid_build_context_in_providers.dart';
 import 'src/lints/avoid_public_notifier_properties.dart';
 import 'src/lints/avoid_ref_inside_state_dispose.dart';
+import 'src/lints/consumer_dependencies.dart';
 import 'src/lints/functional_ref.dart';
 import 'src/lints/missing_provider_scope.dart';
 import 'src/lints/notifier_build.dart';
@@ -29,22 +30,23 @@ PluginBase createPlugin() => _RiverpodPlugin();
 class _RiverpodPlugin extends PluginBase {
   @override
   List<RiverpodLintRule> getLintRules(CustomLintConfigs configs) => [
-    const AsyncValueNullablePattern(),
-    const AvoidBuildContextInProviders(),
-    const OnlyUseKeepAliveInsideKeepAlive(),
-    const AvoidPublicNotifierProperties(),
-    const AvoidRefInsideStateDispose(),
-    const FunctionalRef(),
-    const MissingProviderScope(),
-    const NotifierBuild(),
-    const NotifierExtends(),
-    const ProtectedNotifierProperties(),
-    const ProviderDependencies(),
-    const ProviderParameters(),
-    const RiverpodSyntaxError(),
-    const ScopedProvidersShouldSpecifyDependencies(),
-    const UnsupportedProviderValue(),
-  ];
+        const AsyncValueNullablePattern(),
+        const AvoidBuildContextInProviders(),
+        const OnlyUseKeepAliveInsideKeepAlive(),
+        const AvoidPublicNotifierProperties(),
+        const AvoidRefInsideStateDispose(),
+        const FunctionalRef(),
+        const MissingProviderScope(),
+        const NotifierBuild(),
+        const NotifierExtends(),
+        const ProtectedNotifierProperties(),
+        const ProviderDependencies(),
+        const ConsumerDependencies(),
+        const ProviderParameters(),
+        const RiverpodSyntaxError(),
+        const ScopedProvidersShouldSpecifyDependencies(),
+        const UnsupportedProviderValue(),
+      ];
 
   @override
   List<Assist> getAssists() => [
