@@ -19,7 +19,7 @@ class AsyncValueNullablePattern extends RiverpodLintRule {
     problemMessage:
         'Using AsyncValue(:final value?) on possibly nullable value is unsafe. '
         'Use AsyncValue(:final value, hasValue: true) instead.',
-    errorSeverity: ErrorSeverity.WARNING,
+    errorSeverity: DiagnosticSeverity.WARNING,
   );
 
   @override
@@ -63,8 +63,8 @@ class AsyncValueNullablePattern extends RiverpodLintRule {
         final unit = node.thisOrAncestorOfType<CompilationUnit>()!;
 
         genericType =
-            genericType.element3.bound ??
-            unit.declaredFragment!.element.library2.typeProvider.dynamicType;
+            genericType.element.bound ??
+            unit.declaredFragment!.element.library.typeProvider.dynamicType;
       }
 
       if (genericType is! DynamicType &&

@@ -192,6 +192,8 @@ extension on AccumulatedDependencyList {
 abstract class DependenciesLintBase extends RiverpodLintRule {
   const DependenciesLintBase({required super.code});
 
+  static final _dataExpando = Expando<_DependenciesData>();
+
   bool shouldLint(AccumulatedDependencyList list);
 
   @override
@@ -274,7 +276,7 @@ abstract class DependenciesLintBase extends RiverpodLintRule {
       late final unit = list.node.thisOrAncestorOfType<CompilationUnit>();
       late final source = unit?.declaredFragment?.source;
 
-      reporter.atNode(
+      final diagnostic = reporter.atNode(
         list.target,
         code,
         arguments: [message.toString()],
@@ -288,8 +290,8 @@ abstract class DependenciesLintBase extends RiverpodLintRule {
                 length: dependency.node.length,
               ),
         ],
-        data: _DependenciesData(usedDependencies: usedDependencies, list: list),
       );
+      _dataExpando[diagnostic] = _DependenciesData(usedDependencies: usedDependencies, list: list);
     });
   }
 
@@ -307,8 +309,8 @@ class _DependenciesFix extends RiverpodFix {
     AnalysisError analysisError,
     List<AnalysisError> others,
   ) {
-    final data = analysisError.data;
-    if (data is! _DependenciesData) return;
+    final data = DependenciesLintBase._dataExpando[analysisError];
+    if (data == null) return;
 
     final scopedDependencies =
         data.usedDependencies.map((e) => e.provider).toSet();

@@ -17,7 +17,7 @@ class AvoidRefInsideStateDispose extends RiverpodLintRule {
   static const _code = LintCode(
     name: 'avoid_ref_inside_state_dispose',
     problemMessage: "Avoid using 'Ref' inside State.dispose.",
-    errorSeverity: ErrorSeverity.WARNING,
+    errorSeverity: DiagnosticSeverity.WARNING,
   );
 
   @override

@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/error/error.dart'
     hide
         // ignore: undefined_hidden_name, necessary to support lower analyzer version
@@ -18,7 +18,7 @@ class NotifierBuild extends RiverpodLintRule {
     name: 'notifier_build',
     problemMessage:
         'Classes annotated by `@riverpod` must have the `build` method',
-    errorSeverity: ErrorSeverity.ERROR,
+    errorSeverity: DiagnosticSeverity.ERROR,
   );
 
   @override
@@ -30,10 +30,10 @@ class NotifierBuild extends RiverpodLintRule {
     context.registry.addClassDeclaration((node) {
       final hasRiverpodAnnotation =
           node.metadata.where((element) {
-            final annotationElement = element.element2;
+            final annotationElement = element.element;
 
             if (annotationElement == null ||
-                annotationElement is! ExecutableElement2) {
+                annotationElement is! ExecutableElement) {
               return false;
             }
 

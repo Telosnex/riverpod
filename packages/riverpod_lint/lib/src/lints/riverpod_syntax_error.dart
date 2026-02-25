@@ -14,7 +14,7 @@ class RiverpodSyntaxError extends RiverpodLintRule {
   static const _code = LintCode(
     name: 'riverpod_syntax_error',
     problemMessage: '{0}',
-    errorSeverity: ErrorSeverity.ERROR,
+    errorSeverity: DiagnosticSeverity.ERROR,
   );
 
   @override
@@ -31,7 +31,7 @@ class RiverpodSyntaxError extends RiverpodLintRule {
       final location = error.targetNode.sourceRange;
 
       reporter.atOffset(
-        errorCode: _code,
+        diagnosticCode: _code,
         offset: location.offset,
         length: location.length,
         arguments: [error.message],

@@ -20,7 +20,7 @@ class OnlyUseKeepAliveInsideKeepAlive extends RiverpodLintRule {
     correctionMessage:
         'Either stop marking this provider as `keepAlive` or '
         'remove `keepAlive` from the used provider.',
-    errorSeverity: ErrorSeverity.WARNING,
+    errorSeverity: DiagnosticSeverity.WARNING,
   );
 
   @override

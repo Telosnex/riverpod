@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/error/error.dart'
     hide
         // ignore: undefined_hidden_name, necessary to support lower analyzer version
@@ -18,7 +18,7 @@ class FunctionalRef extends RiverpodLintRule {
     name: 'functional_ref',
     problemMessage:
         'Functional providers must receive a ref matching the provider name as their first positional parameter.',
-    errorSeverity: ErrorSeverity.WARNING,
+    errorSeverity: DiagnosticSeverity.WARNING,
   );
 
   @override
@@ -133,7 +133,7 @@ class FunctionalRefFix extends RiverpodFix {
 }
 
 extension LibraryForNode on AstNode {
-  LibraryElement2 get library => (root as CompilationUnit).library;
+  LibraryElement get library => (root as CompilationUnit).library;
 }
 
 TypeAnnotation typeAnnotationFor(FormalParameter param) {

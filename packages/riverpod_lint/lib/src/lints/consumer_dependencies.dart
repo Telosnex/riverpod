@@ -14,7 +14,7 @@ class ConsumerDependencies extends DependenciesLintBase {
         code: const LintCode(
           name: 'consumer_dependencies',
           problemMessage: '{0}',
-          errorSeverity: ErrorSeverity.WARNING,
+          errorSeverity: DiagnosticSeverity.WARNING,
         ),
       );
 

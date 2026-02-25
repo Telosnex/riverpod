@@ -13,7 +13,7 @@ class ProviderDependencies extends DependenciesLintBase {
           code: const LintCode(
             name: 'provider_dependencies',
             problemMessage: '{0}',
-            errorSeverity: ErrorSeverity.WARNING,
+            errorSeverity: DiagnosticSeverity.WARNING,
           ),
         );
 

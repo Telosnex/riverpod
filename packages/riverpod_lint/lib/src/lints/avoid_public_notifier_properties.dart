@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 import 'package:riverpod_analyzer_utils/riverpod_analyzer_utils.dart';
@@ -34,21 +34,21 @@ class AvoidPublicNotifierProperties extends RiverpodLintRule {
         final metadata = switch (member) {
           FieldDeclaration() =>
             member.fields.variables.first.declaredFragment?.element
-                as Annotatable?,
-          _ => member.declaredFragment?.element as Annotatable?,
+                as Element?,
+          _ => member.declaredFragment?.element as Element?,
         };
         // Skip members if there's an @override annotation
-        if (metadata == null || metadata.metadata2.hasOverride) {
+        if (metadata == null || metadata.metadata.hasOverride) {
           continue;
         }
 
-        bool isVisibleOutsideTheNotifier(Element2? element) {
-          final annotatable = element as Annotatable?;
+        bool isVisibleOutsideTheNotifier(Element? element) {
+          final annotatable = element as Element?;
           return element != null &&
               element.isPublic &&
-              !annotatable!.metadata2.hasProtected &&
-              !annotatable.metadata2.hasVisibleForOverriding &&
-              !annotatable.metadata2.hasVisibleForTesting;
+              !annotatable!.metadata.hasProtected &&
+              !annotatable.metadata.hasVisibleForOverriding &&
+              !annotatable.metadata.hasVisibleForTesting;
         }
 
         if (member is FieldDeclaration) {

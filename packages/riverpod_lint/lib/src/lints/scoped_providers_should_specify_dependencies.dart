@@ -13,7 +13,7 @@ extension SimpleIdentifierX on SimpleIdentifier {
   bool get isFlutterRunApp {
     if (name != 'runApp') return false;
 
-    final library = element?.library2;
+    final library = element?.library;
     if (library == null) return false;
 
     return library.uri.scheme == 'package' &&
@@ -23,7 +23,7 @@ extension SimpleIdentifierX on SimpleIdentifier {
   bool get isPumpWidget {
     if (name != 'pumpWidget') return false;
 
-    final library = element?.library2;
+    final library = element?.library;
     if (library == null) return false;
 
     return library.uri.scheme == 'package' &&
@@ -38,7 +38,7 @@ class ScopedProvidersShouldSpecifyDependencies extends RiverpodLintRule {
     name: 'scoped_providers_should_specify_dependencies',
     problemMessage:
         'Providers which are overridden in a non-root ProviderContainer/ProviderScope should specify dependencies.',
-    errorSeverity: ErrorSeverity.WARNING,
+    errorSeverity: DiagnosticSeverity.WARNING,
   );
 
   @override
