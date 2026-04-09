@@ -397,8 +397,6 @@ base class ConsumerStatefulElement extends StatefulElement
     }
   }
 
-  Widget? _lastBuildResult;
-
   @override
   Widget build() {
     final isActive = TickerMode.of(context);
@@ -411,13 +409,6 @@ base class ConsumerStatefulElement extends StatefulElement
           sub.pause();
         }
       }
-      // Safe to skip the try block below: subscriptions are paused (won't
-      // fire), so existing _dependencies and _listeners stay valid. When the
-      // page comes back onscreen, isActive flips to true, subscriptions
-      // resume, and we fall through to the full rebuild path.
-      if (!isActive && _lastBuildResult != null) {
-        return _lastBuildResult!;
-      }
     }
 
     try {
@@ -427,9 +418,7 @@ base class ConsumerStatefulElement extends StatefulElement
       }
       _listeners.clear();
       _dependencies = {};
-      final result = super.build();
-      _lastBuildResult = result;
-      return result;
+      return super.build();
     } finally {
       for (final dep in _oldDependencies!.values) {
         dep.close();
