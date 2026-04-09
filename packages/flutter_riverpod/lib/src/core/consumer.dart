@@ -379,9 +379,56 @@ base class ConsumerStatefulElement extends StatefulElement
   final _listeners = <ProviderSubscription<Object?>>[];
   List<ProviderSubscription<Object?>>? _manualListeners;
   bool? _isActive;
+  ValueListenable<TickerModeData>? _tickerModeNotifier;
 
   void _applyTickerMode(ProviderSubscription sub) {
     if (_isActive == false) sub.pause();
+  }
+
+  /// Mark this element as needing rebuild, deferring if necessary.
+  ///
+  /// When a sibling widget's `ref.watch` flushes a stale provider,
+  /// the provider rebuilds and notifies all subscribers. This can call
+  /// [markNeedsBuild] on a clean non-ancestor widget during the build
+  /// phase, which Flutter's debug assert rejects. In release mode the
+  /// assert is stripped and it works fine.
+  ///
+  /// We catch the [FlutterError] and defer to a post-frame callback.
+  /// This is the only correct interception point: riverpod core cannot
+  /// defer notifications (it would need `setState` during build), and
+  /// there is no public API to check ancestor status.
+  void _safeMarkNeedsBuild() {
+    try {
+      markNeedsBuild();
+    // rationale: not possible before runtime, see comment above
+    // ignore: avoid_catching_errors
+    } on FlutterError {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) markNeedsBuild();
+      });
+    }
+  }
+
+  void _ensureTickerModeSubscribed() {
+    final newNotifier = TickerMode.getValuesNotifier(this);
+    if (identical(newNotifier, _tickerModeNotifier)) return;
+    _tickerModeNotifier?.removeListener(_onTickerModeChanged);
+    _tickerModeNotifier = newNotifier;
+    _tickerModeNotifier!.addListener(_onTickerModeChanged);
+    _isActive = newNotifier.value.enabled;
+  }
+
+  void _onTickerModeChanged() {
+    final isActive = _tickerModeNotifier!.value.enabled;
+    if (isActive == _isActive) return;
+    _isActive = isActive;
+    for (final sub in _dependencies.values) {
+      if (isActive) {
+        sub.resume();
+      } else {
+        sub.pause();
+      }
+    }
   }
 
   @override
@@ -399,18 +446,7 @@ base class ConsumerStatefulElement extends StatefulElement
 
   @override
   Widget build() {
-    final isActive = TickerMode.of(context);
-    if (isActive != _isActive) {
-      _isActive = isActive;
-      for (final sub in _dependencies.values) {
-        if (isActive) {
-          sub.resume();
-        } else {
-          sub.pause();
-        }
-      }
-    }
-
+    _ensureTickerModeSubscribed();
     try {
       _oldDependencies = _dependencies;
       for (var i = 0; i < _listeners.length; i++) {
@@ -450,7 +486,7 @@ base class ConsumerStatefulElement extends StatefulElement
 
               final sub = container.listen<StateT>(
                 target,
-                (_, __) => markNeedsBuild(),
+                (_, __) => _safeMarkNeedsBuild(),
               );
               _applyTickerMode(sub);
               return sub;
@@ -462,6 +498,9 @@ base class ConsumerStatefulElement extends StatefulElement
 
   @override
   void unmount() {
+    _tickerModeNotifier?.removeListener(_onTickerModeChanged);
+    _tickerModeNotifier = null;
+
     /// Calling `super.unmount()` will call `dispose` on the state
     /// And [ListenManual] subscriptions should be closed after `dispose`
     super.unmount();
