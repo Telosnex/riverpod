@@ -415,11 +415,16 @@ base class ConsumerStatefulElement extends StatefulElement
     _tickerModeNotifier?.removeListener(_onTickerModeChanged);
     _tickerModeNotifier = newNotifier;
     _tickerModeNotifier!.addListener(_onTickerModeChanged);
-    _isActive = newNotifier.value.enabled;
+    // Reparenting: the new TickerMode ancestor may have a different enabled
+    // state than the old one. Sync subscription pause/resume to match.
+    _applyActiveState(newNotifier.value.enabled);
   }
 
   void _onTickerModeChanged() {
-    final isActive = _tickerModeNotifier!.value.enabled;
+    _applyActiveState(_tickerModeNotifier!.value.enabled);
+  }
+
+  void _applyActiveState(bool isActive) {
     if (isActive == _isActive) return;
     _isActive = isActive;
     for (final sub in _dependencies.values) {
