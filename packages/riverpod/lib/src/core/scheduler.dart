@@ -159,7 +159,23 @@ class ProviderScheduler {
     while (stateToRefresh.isNotEmpty) {
       final element = stateToRefresh.first;
       stateToRefresh.remove(element);
-      if (element.isActive) element.flush();
+      // Flush when there are any non-weak listeners, even if they are all
+      // paused. Paused listeners are still listeners; they need the provider
+      // to rebuild so that the new value is queued into `_missedCalled` and
+      // delivered when the subscription resumes.
+      //
+      // Using `isActive` here (which excludes paused subs) would leave the
+      // provider permanently dirty: `invalidateSelf()` has already run
+      // `runOnDispose` (cancelling internal timers etc.) but the matching
+      // rebuild never happens, so on resume there is nothing to deliver and
+      // the provider cannot recover. This manifests as a widget frozen on a
+      // stale value after navigating Home→Chat→Home when TickerMode toggles.
+      //
+      // `hasNonWeakListeners` keeps the original intent — skip rebuilding
+      // providers with zero listeners (they are about to be disposed via
+      // `_performDispose` below) — while letting paused-but-listened-to
+      // providers recompute normally.
+      if (element.hasNonWeakListeners) element.flush();
     }
 
     if (kDebugMode) {
