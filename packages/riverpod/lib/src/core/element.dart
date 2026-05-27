@@ -807,6 +807,8 @@ The provider ${_debugCurrentlyBuildingElement!.origin} modified $origin while bu
   void invalidateSelf({required bool asReload, required bool manual}) {
     if (!_didMount) return;
 
+    debugCanModifyProviders?.call();
+
     if (asReload) _didChangeDependency = true;
     if (_mustRecomputeState) return;
 

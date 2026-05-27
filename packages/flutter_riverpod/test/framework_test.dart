@@ -249,6 +249,42 @@ void main() {
     expect(error, isNotNull);
   });
 
+  testWidgets('widgets cannot invalidate providers in their build method', (
+    tester,
+  ) async {
+    final onError = FlutterError.onError;
+    Object? error;
+    FlutterError.onError = (details) {
+      error = details.exception;
+    };
+
+    final provider = Provider((ref) => 0);
+    final container = ProviderContainer.test();
+
+    await runZonedGuarded(
+      () => tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: Consumer(
+            builder: (context, ref, _) {
+              ref.watch(provider);
+              ref.invalidate(provider);
+              return Container();
+            },
+          ),
+        ),
+      ),
+      (error, stack) {},
+    );
+
+    FlutterError.onError = onError;
+    expect(error, isFlutterError);
+    expect(
+      error.toString(),
+      contains('Tried to modify a provider while the widget tree was building'),
+    );
+  });
+
   testWidgets('ref.watch within a build method can flush providers', (
     tester,
   ) async {
