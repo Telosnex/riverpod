@@ -402,6 +402,50 @@ void main() {
     expect(container.exists(provider), false);
   });
 
+  testWidgets('can schedule a refresh while an autoDispose task is pending', (
+    tester,
+  ) async {
+    final container = ProviderContainer.test();
+    addTearDown(container.dispose);
+
+    final providerToDispose = Provider.autoDispose((ref) => 0);
+    final dependency = StateProvider((ref) => 0);
+    var buildCount = 0;
+    final providerToRefresh = Provider((ref) {
+      buildCount++;
+      return ref.watch(dependency);
+    });
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: Consumer(
+          builder: (context, ref, _) {
+            ref.watch(providerToRefresh);
+            return Container();
+          },
+        ),
+      ),
+    );
+
+    expect(buildCount, 1);
+
+    // Closing this subscription schedules an auto-dispose task through
+    // UncontrolledProviderScope.scheduleDispose. Before that task gets a
+    // chance to run, mutate another provider that is watched by the widget
+    // tree. This asks the scheduler to upgrade the pending dispose task into
+    // a refresh task.
+    final sub = container.listen(providerToDispose, (_, _) {});
+    sub.close();
+
+    container.read(dependency.notifier).state++;
+
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+    expect(buildCount, 2);
+  });
+
   testWidgets(
     'UncontrolledProviderScope gracefully handles debugCanModifyProviders',
     (tester) async {
