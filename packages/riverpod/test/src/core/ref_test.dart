@@ -16,6 +16,7 @@ import 'package:riverpod/src/internals.dart'
         AsyncValueInternals,
         CircularDependencyError,
         DataSource,
+        debugCanModifyProviders,
         InternalProviderContainer,
         ProviderContainerTest,
         ProviderElement,
@@ -430,6 +431,37 @@ void main() {
     });
 
     group('invalidateSelf', () {
+      test(
+        'automatic dependency invalidation does not call debugCanModifyProviders',
+        () async {
+          final container = ProviderContainer.test();
+          addTearDown(container.dispose);
+
+          final previousDebugCanModifyProviders = debugCanModifyProviders;
+          addTearDown(
+            () => debugCanModifyProviders = previousDebugCanModifyProviders,
+          );
+          var allowProviderModification = true;
+          debugCanModifyProviders = () {
+            if (!allowProviderModification) {
+              throw StateError('should not be called');
+            }
+          };
+
+          final dependency = StateProvider((ref) => 0);
+          final child = Provider((ref) => ref.watch(dependency));
+          final parent = Provider((ref) => ref.watch(child));
+
+          container.listen(parent, (previous, next) {});
+
+          container.read(dependency.notifier).state++;
+          allowProviderModification = false;
+          await container.pump();
+
+          expect(container.read(parent), 1);
+        },
+      );
+
       test('calls dispose immediately', () {
         final container = ProviderContainer.test();
         final listener = OnDisposeMock();
