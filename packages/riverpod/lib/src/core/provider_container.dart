@@ -855,7 +855,8 @@ final class ProviderContainer implements MutationTarget {
        retry = retry ?? parent?.retry,
        observers = [
          ...?observers,
-         if (kDebugMode && parent == null) const DevtoolObserver(),
+         if (kDebugMode && parent == null && debugRiverpodDevtoolEnabled)
+           const DevtoolObserver(),
          if (parent != null) ...parent.observers,
        ],
        _root = parent?._root ?? parent {

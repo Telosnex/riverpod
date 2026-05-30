@@ -21,6 +21,15 @@ part of '../framework.dart';
 /// The devtool should then automatically pick up the stack trace of providers.
 bool debugTrackProviderCreation = false;
 
+/// Whether Riverpod should attach its VM-service devtool observer in debug mode.
+///
+/// The observer keeps a timeline of provider lifecycle events for DevTools.
+/// Those events currently retain provider elements and provider values, so a
+/// busy app can look like it has a large Riverpod leak while the devtool
+/// timeline is enabled. Keep this opt-in until the event history is bounded or
+/// stores only lightweight snapshots.
+bool debugRiverpodDevtoolEnabled = false;
+
 @internal
 void inspectInIDE(Object? obj) {
   dev.inspect(obj);
