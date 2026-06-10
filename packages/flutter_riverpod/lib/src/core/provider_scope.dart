@@ -296,6 +296,52 @@ final class _UncontrolledProviderScopeState
     task?.call();
   }
 
+  /// Whether calling [setState] right now would be accepted by the framework.
+  ///
+  /// Calling [setState] while the framework is building another widget is
+  /// only allowed if this [State] is a descendant of the widget currently
+  /// being built. That situation is valid and relied upon: an ancestor
+  /// [ProviderScope] calling `container.updateOverrides` during its build can
+  /// invalidate providers of a descendant scope, which must rebuild within
+  /// the same frame.
+  ///
+  /// The invalid situation is the reverse: a descendant widget calling
+  /// `ref.watch` during its build can flush an already-dirty provider, which
+  /// can synchronously invalidate a dependent provider, which schedules a
+  /// refresh on this scope -- an *ancestor* of the widget being built. The
+  /// framework rejects `setState` there with "setState() or markNeedsBuild()
+  /// called during build". In that case this method returns false and the
+  /// caller relies on the vsync timer fallback to run the task right after
+  /// the current frame.
+  ///
+  /// The framework only checks this in debug mode (in release,
+  /// [Element.markNeedsBuild] quietly defers the rebuild), so this probe is
+  /// debug-only too and always returns true in release.
+  bool _canMarkNeedsBuild() {
+    var result = true;
+    assert(() {
+      final owner = context.owner;
+      if (owner == null || !owner.debugBuilding) return true;
+
+      // The framework is in the middle of a build pass. The element whose
+      // build method is currently executing is the unique element with
+      // `debugDoingBuild == true`. The framework does not expose it directly,
+      // but if it is an ancestor of this scope, this scope is a descendant of
+      // the current build target and setState is legal.
+      var isDescendantOfBuildTarget = false;
+      context.visitAncestorElements((element) {
+        if (element.debugDoingBuild) {
+          isDescendantOfBuildTarget = true;
+          return false;
+        }
+        return true;
+      });
+      result = isDescendantOfBuildTarget;
+      return true;
+    }());
+    return result;
+  }
+
   void _debugAssertCanScheduleTask(Task task) {
     assert(
       _task == null
@@ -315,9 +361,10 @@ final class _UncontrolledProviderScopeState
     _cancelAsyncTask?.call();
     _cancelAsyncTask = null;
 
-    setState(() {
-      _task = task;
-    });
+    _task = task;
+    if (_canMarkNeedsBuild()) {
+      setState(() {});
+    }
 
     _vsyncTimer?.cancel();
     _vsyncTimer = Timer(Duration.zero, () {

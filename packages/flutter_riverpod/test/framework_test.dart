@@ -320,6 +320,47 @@ void main() {
     expect(find.text('1'), findsOneWidget);
   });
 
+  testWidgets(
+    'flushing a watched provider during widget build does not schedule a scope refresh',
+    (tester) async {
+      final container = ProviderContainer.test();
+      addTearDown(container.dispose);
+
+      final dep = StateProvider((ref) => 0);
+      final flushedProvider = Provider((ref) => ref.watch(dep));
+      final dependentProvider = Provider((ref) => ref.watch(flushedProvider));
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: Container()),
+      );
+
+      // Keep both providers alive without a Flutter listener. This mirrors an
+      // already-mounted provider graph that has been dirtied before a widget
+      // starts watching part of it during build.
+      container.read(flushedProvider);
+      container.read(dependentProvider);
+
+      container.read(dep.notifier).state++;
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: Consumer(
+            builder: (context, ref, _) {
+              return Text(
+                '${ref.watch(flushedProvider)}',
+                textDirection: TextDirection.ltr,
+              );
+            },
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('1'), findsOneWidget);
+    },
+  );
+
   testWidgets('UncontrolledProviderScope gracefully handles vsync', (
     tester,
   ) async {
