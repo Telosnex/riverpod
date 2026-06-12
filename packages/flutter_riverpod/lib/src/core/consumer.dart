@@ -360,6 +360,57 @@ abstract class ConsumerState<WidgetT extends ConsumerStatefulWidget>
   late final ref = context as WidgetRef;
 }
 
+/// Multiplexes one TickerMode notifier to many [ConsumerStatefulElement]s.
+///
+/// Why: [ChangeNotifier.addListener]/[ChangeNotifier.removeListener] are
+/// O(listeners) with closure-equality scans. Upstream riverpod registers one
+/// `_updateTickerMode` tear-off per consumer element on the *shared*
+/// per-route TickerMode notifier. With hundreds of consumer elements alive
+/// under one route, a burst of unmounts (e.g. tiles crossing a scroll
+/// view's cache extent) costs O(unmounted × alive) `_Closure.==` calls —
+/// measured at ~3.6% of UI-thread CPU while scrolling a conversation in
+/// telosnex (test-results/dart_devtools_2026-06-12_10_35_06.170.json).
+///
+/// The hub registers exactly ONE listener on the notifier and tracks its
+/// elements in an identity [HashSet], making attach/detach O(1).
+///
+/// Lifecycle: hubs are stored in an [Expando] keyed by the notifier, so a
+/// hub (and its single listener) lives exactly as long as its notifier and
+/// is collected with it. The hub intentionally never removes its own
+/// listener when it becomes empty: the notifier is owned by [TickerMode],
+/// which disposes it wholesale, and staying attached avoids add/remove
+/// thrash as elements come and go.
+class _TickerModeHub {
+  _TickerModeHub._(this._notifier) {
+    _notifier.addListener(_onChanged);
+  }
+
+  factory _TickerModeHub.of(ValueListenable<bool> notifier) {
+    return _hubs[notifier] ??= _TickerModeHub._(notifier);
+  }
+
+  static final Expando<_TickerModeHub> _hubs = Expando<_TickerModeHub>(
+    '_TickerModeHub',
+  );
+
+  final ValueListenable<bool> _notifier;
+  final HashSet<ConsumerStatefulElement> _elements =
+      HashSet<ConsumerStatefulElement>.identity();
+
+  void add(ConsumerStatefulElement element) => _elements.add(element);
+
+  void remove(ConsumerStatefulElement element) => _elements.remove(element);
+
+  void _onChanged() {
+    // Iterate a copy: pausing/resuming subscriptions can synchronously
+    // mark elements dirty, and a TickerMode flip is rare (route
+    // transitions), so the allocation is irrelevant.
+    for (final element in _elements.toList()) {
+      element._updateTickerMode();
+    }
+  }
+}
+
 /// The [Element] for a [ConsumerStatefulWidget]
 @internal
 base class ConsumerStatefulElement extends StatefulElement
@@ -382,6 +433,7 @@ base class ConsumerStatefulElement extends StatefulElement
   final _listeners = <ProviderSubscription<Object?>>[];
   List<ProviderSubscription<Object?>>? _manualListeners;
   ValueListenable<bool>? _tickerModeNotifier;
+  _TickerModeHub? _tickerModeHub;
   bool? _isActive;
 
   @override
@@ -410,8 +462,10 @@ base class ConsumerStatefulElement extends StatefulElement
     final newTickerModeNotifier = TickerMode.getNotifier(context);
 
     if (_tickerModeNotifier != newTickerModeNotifier) {
-      _tickerModeNotifier?.removeListener(_updateTickerMode);
-      newTickerModeNotifier.addListener(_updateTickerMode);
+      // O(1) hub membership instead of per-element listeners on the shared
+      // notifier; see _TickerModeHub.
+      _tickerModeHub?.remove(this);
+      _tickerModeHub = _TickerModeHub.of(newTickerModeNotifier)..add(this);
       _tickerModeNotifier = newTickerModeNotifier;
       _updateTickerMode();
     }
@@ -504,7 +558,9 @@ base class ConsumerStatefulElement extends StatefulElement
     /// Calling `super.unmount()` will call `dispose` on the state
     /// And [ListenManual] subscriptions should be closed after `dispose`
     super.unmount();
-    _tickerModeNotifier?.removeListener(_updateTickerMode);
+    _tickerModeHub?.remove(this);
+    _tickerModeHub = null;
+    _tickerModeNotifier = null;
 
     for (final dependency in _dependencies.values) {
       dependency.close();

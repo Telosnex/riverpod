@@ -954,7 +954,11 @@ final class ProviderContainer implements MutationTarget {
     return delay;
   }
 
-  final _debugId = ContainerId(const Uuid().v4());
+  // Lazy: a UUID per container is only consumed by the devtool, but used to
+  // be generated eagerly in every build mode. Apps creating containers in
+  // hot paths (e.g. a ProviderScope per list tile) paid for random bytes +
+  // string formatting on every mount.
+  late final _debugId = ContainerId(const Uuid().v4());
 
   final int _debugOverridesLength;
 
