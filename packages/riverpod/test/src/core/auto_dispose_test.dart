@@ -124,31 +124,38 @@ void main() {
             fireImmediately: true,
           );
 
-          expect(a.pointerManager.readPointer(provider), isNotNull);
-          expect(b.pointerManager.readPointer(provider), isNull);
-          expect(c.pointerManager.readPointer(provider), isNull);
-          expect(d.pointerManager.readPointer(provider), isNotNull);
+          // Fork note: orphan directories are lazy (ProviderDirectory.lazyFork),
+          // so readPointer resolves through the parent chain and b/c would
+          // observe a's pointer. The regression being tested (riverpod#1943)
+          // is about stale pointer *storage*, so assert on the local maps.
+          $ProviderPointer? localPointer(ProviderContainer container) =>
+              container.pointerManager.orphanPointers.pointers[provider];
+
+          expect(localPointer(a), isNotNull);
+          expect(localPointer(b), isNull);
+          expect(localPointer(c), isNull);
+          expect(localPointer(d), isNotNull);
 
           subscription.close();
 
-          expect(a.pointerManager.readPointer(provider), isNotNull);
-          expect(b.pointerManager.readPointer(provider), isNull);
-          expect(c.pointerManager.readPointer(provider), isNull);
-          expect(d.pointerManager.readPointer(provider), isNotNull);
+          expect(localPointer(a), isNotNull);
+          expect(localPointer(b), isNull);
+          expect(localPointer(c), isNull);
+          expect(localPointer(d), isNotNull);
 
           await a.pump();
 
-          expect(a.pointerManager.readPointer(provider), isNull);
-          expect(b.pointerManager.readPointer(provider), isNull);
-          expect(c.pointerManager.readPointer(provider), isNull);
-          expect(d.pointerManager.readPointer(provider), isNull);
+          expect(localPointer(a), isNull);
+          expect(localPointer(b), isNull);
+          expect(localPointer(c), isNull);
+          expect(localPointer(d), isNull);
 
           d.listen(provider, (previous, next) {}, fireImmediately: true);
 
-          expect(a.pointerManager.readPointer(provider), isNotNull);
-          expect(b.pointerManager.readPointer(provider), isNull);
-          expect(c.pointerManager.readPointer(provider), isNull);
-          expect(d.pointerManager.readPointer(provider), isNotNull);
+          expect(localPointer(a), isNotNull);
+          expect(localPointer(b), isNull);
+          expect(localPointer(c), isNull);
+          expect(localPointer(d), isNotNull);
         },
       );
 

@@ -1113,10 +1113,16 @@ void main() {
             ],
           );
 
+          // Fork note: orphan directories are lazy (ProviderDirectory.lazyFork);
+          // only local overrides are materialized eagerly. Inherited pointers
+          // resolve through the chain instead of being copied.
           expect(container.pointerManager.orphanPointers.pointers, {
-            dep: isPointer(targetContainer: mid, override: dep),
             unrelated: isPointer(),
           });
+          expect(
+            container.pointerManager.readPointer(dep),
+            isPointer(targetContainer: mid, override: dep),
+          );
           expect(container.pointerManager.familyPointers, isEmpty);
         });
 
@@ -1196,22 +1202,15 @@ void main() {
             ),
           });
 
+          // Fork note: orphan directories are lazy (ProviderDirectory.lazyFork);
+          // only the local override (c) is materialized eagerly. a/b remain
+          // visible through the chain.
           expect(
             container.pointerManager.orphanPointers,
             isProviderDirectory(
               targetContainer: root,
               override: null,
               pointers: {
-                a: isPointer(
-                  override: aOverride,
-                  targetContainer: root,
-                  element: null,
-                ),
-                b: isPointer(
-                  override: bOverride,
-                  targetContainer: mid,
-                  element: null,
-                ),
                 c: isPointer(
                   override: cOverride,
                   targetContainer: container,
@@ -1219,6 +1218,14 @@ void main() {
                 ),
               },
             ),
+          );
+          expect(
+            container.pointerManager.readPointer(a),
+            isPointer(override: aOverride, targetContainer: root, element: null),
+          );
+          expect(
+            container.pointerManager.readPointer(b),
+            isPointer(override: bOverride, targetContainer: mid, element: null),
           );
         });
 

@@ -155,6 +155,7 @@ class ProviderDirectory implements _PointerBase {
     ProviderContainer container, {
     required this.familyOverride,
   }) : pointers = HashMap(),
+       _base = null,
        targetContainer = container;
 
   ProviderDirectory.from(
@@ -167,9 +168,47 @@ class ProviderDirectory implements _PointerBase {
        ),
        familyOverride = familyOverride ?? pointer.familyOverride,
        targetContainer = targetContainer ?? pointer.targetContainer,
-       pointers = HashMap.fromEntries(
-         pointer.pointers.entries.where((e) => !e.value.isTransitiveOverride),
-       );
+       _base = null,
+       pointers = _copyNonTransitive(pointer.pointers);
+
+  /// Copy-on-read fork of a base directory: starts with an empty local map and
+  /// resolves misses by walking the base chain (see [lookup]), caching hits
+  /// locally. Used for the orphan directory of scoped containers, where the
+  /// eager [ProviderDirectory.from] copy is O(all live providers in the
+  /// app) per `ProviderScope` — measured at ~2% of UI-thread CPU while
+  /// scrolling a conversation in telosnex, with a ProviderScope per tile.
+  ///
+  /// Semantics relative to the eager copy:
+  /// - A transitive-override entry in the chain *stops* the walk (the eager
+  ///   copy dropped such entries, and the level below copied-minus-dropped,
+  ///   so a nearer transitive entry must shadow deeper ones).
+  /// - The eager copy was a snapshot; the chain walk is live. These only
+  ///   diverge for entries added to an ancestor *after* the fork, which are
+  ///   either root-mounted pointers (identical objects the chain would
+  ///   produce anyway) or transitive overrides (dropped either way — and
+  ///   the live view is the more correct one: if a dependency became
+  ///   scoped in an ancestor, this scope is affected by the same override).
+  ProviderDirectory.lazyFork(ProviderDirectory base)
+    : familyOverride = base.familyOverride,
+      targetContainer = base.targetContainer,
+      _base = base,
+      pointers = HashMap();
+
+  /// Equivalent to
+  /// `HashMap.fromEntries(source.entries.where((e) => !e.value.isTransitiveOverride))`
+  /// without the MapEntry/iterator-chain allocations. This runs for every
+  /// scoped-container creation (e.g. a ProviderScope per list tile) and is
+  /// proportional to the number of live providers in the parent, so the
+  /// constant factor matters.
+  static HashMap<ProviderBase<Object?>, $ProviderPointer> _copyNonTransitive(
+    HashMap<ProviderBase<Object?>, $ProviderPointer> source,
+  ) {
+    final result = HashMap<ProviderBase<Object?>, $ProviderPointer>();
+    source.forEach((provider, pointer) {
+      if (!pointer.isTransitiveOverride) result[provider] = pointer;
+    });
+    return result;
+  }
 
   @override
   bool get isTransitiveOverride => familyOverride is TransitiveFamilyOverride;
@@ -182,8 +221,34 @@ class ProviderDirectory implements _PointerBase {
   // ignore: library_private_types_in_public_api, not public API
   _FamilyOverride? familyOverride;
   final HashMap<ProviderBase<Object?>, $ProviderPointer> pointers;
+
+  /// Non-null only for [ProviderDirectory.lazyFork]: the directory this one
+  /// was forked from, consulted on local misses.
+  final ProviderDirectory? _base;
   @override
   ProviderContainer targetContainer;
+
+  /// Pointer lookup honoring lazy forks.
+  ///
+  /// Local entries win; misses walk the base chain, stopping at transitive
+  /// overrides (see [ProviderDirectory.lazyFork]).
+  ///
+  /// Deliberately side-effect-free: it is used during pointer-removal
+  /// traversals (`_recursivePointerRemoval`), so it must not mutate the
+  /// local map. Caching of chain hits happens in [upsertPointer].
+  $ProviderPointer? lookup(ProviderBase<Object?> provider) {
+    final local = pointers[provider];
+    if (local != null) return local;
+
+    for (var base = _base; base != null; base = base._base) {
+      final pointer = base.pointers[provider];
+      if (pointer != null) {
+        if (pointer.isTransitiveOverride) return null;
+        return pointer;
+      }
+    }
+    return null;
+  }
 
   void addProviderOverride(
     // ignore: library_private_types_in_public_api, not public API
@@ -203,6 +268,12 @@ class ProviderDirectory implements _PointerBase {
     ProviderBase<Object?> provider, {
     required ProviderContainer currentContainer,
   }) {
+    // Lazy-fork fast path: a chain hit is exactly what the eager copy would
+    // have found in the local map, which _upsert short-circuits on. Cache it
+    // locally to keep repeated upserts O(1), mirroring the eager layout.
+    final inherited = lookup(provider);
+    if (inherited != null) return pointers[provider] = inherited;
+
     return pointers._upsert(
       provider,
       currentContainer: currentContainer,
@@ -326,27 +397,35 @@ class ProviderPointerManager {
     return ProviderPointerManager(
       overrides,
       container: container,
-      // Always forks orphan pointers, because of possible transitive overrides.
-      orphanPointers: ProviderDirectory.from(
+      // Lazily forks orphan pointers (transitive overrides are handled by
+      // the chain walk in ProviderDirectory.lookup).
+      orphanPointers: ProviderDirectory.lazyFork(
         parent._pointerManager.orphanPointers,
       ),
 
-      familyPointers: HashMap.fromEntries(
-        parent._pointerManager.familyPointers.entries
-            .where(
-              (e) =>
-                  !e.value.isTransitiveOverride &&
-                  // Exclude families that may be automatically scoped unless they are overridden.
-                  (!e.key.canBeTransitivelyOverridden ||
-                      e.value.familyOverride != null),
-            )
-            .map((e) {
-              if (e.key.$allTransitiveDependencies == null) return e;
-
-              return MapEntry(e.key, ProviderDirectory.from(e.value));
-            }),
-      ),
+      familyPointers: _copyFamilyPointers(parent._pointerManager.familyPointers),
     );
+  }
+
+  /// Direct-loop equivalent of the previous
+  /// `HashMap.fromEntries(entries.where(...).map(...))` chain; see
+  /// [ProviderDirectory._copyNonTransitive] for rationale.
+  static HashMap<Family, ProviderDirectory> _copyFamilyPointers(
+    HashMap<Family, ProviderDirectory> source,
+  ) {
+    final result = HashMap<Family, ProviderDirectory>();
+    source.forEach((family, directory) {
+      if (directory.isTransitiveOverride) return;
+      // Exclude families that may be automatically scoped unless they are overridden.
+      if (family.canBeTransitivelyOverridden &&
+          directory.familyOverride == null) {
+        return;
+      }
+      result[family] = family.$allTransitiveDependencies == null
+          ? directory
+          : ProviderDirectory.from(directory);
+    });
+    return result;
   }
 
   final ProviderContainer container;
@@ -493,7 +572,7 @@ class ProviderPointerManager {
   }
 
   $ProviderPointer? readPointer(ProviderBase<Object?> provider) {
-    return readDirectory(provider)?.pointers[provider];
+    return readDirectory(provider)?.lookup(provider);
   }
 
   ProviderElement? readElement(ProviderBase<Object?> provider) {
@@ -1043,11 +1122,7 @@ final class ProviderContainer implements MutationTarget {
   bool exists(ProviderBase<Object?> provider) {
     switch (provider) {
       case $ProviderBaseImpl():
-        return _pointerManager
-                .readDirectory(provider)
-                ?.pointers[provider]
-                ?.element !=
-            null;
+        return _pointerManager.readElement(provider) != null;
     }
   }
 
