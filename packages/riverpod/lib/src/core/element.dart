@@ -350,6 +350,20 @@ mixin ElementWithFuture<StateT, ValueT> on ProviderElement<StateT, ValueT> {
   }
 }
 
+/// Whether riverpod runs expensive internal invariant validation in debug
+/// mode. See [ProviderElement.debugValidateInternalState].
+///
+/// Defaults to true. Apps that want representative debug-mode CPU profiles /
+/// faster debug builds can set this to false at startup; the checks only
+/// guard riverpod's own bookkeeping, not user code.
+bool get riverpodDebugValidateInternalState =>
+    ProviderElement.debugValidateInternalState;
+// Setters cannot use named parameters.
+// ignore: avoid_positional_boolean_parameters
+set riverpodDebugValidateInternalState(bool value) {
+  ProviderElement.debugValidateInternalState = value;
+}
+
 /// {@template riverpod.provider_element_base}
 /// An internal class that handles the state of a provider.
 ///
@@ -1111,8 +1125,27 @@ The provider ${_debugCurrentlyBuildingElement!.origin} modified $origin while bu
     });
   }
 
+  /// Whether to run expensive internal invariant validation in debug mode.
+  ///
+  /// [_assertValidInternalPauseState] and [_assertContainsDependent] validate
+  /// riverpod's *own* subscription bookkeeping ("this is likely a bug in the
+  /// provider implementation") — they do not catch user-code mistakes.
+  ///
+  /// They are hot: [_assertValidInternalPauseState] runs twice per
+  /// subscription change (every watch/listen add, remove, pause, resume) and
+  /// each run materializes a combined list of all subscriptions plus two
+  /// where()-iterations. In real apps with churning widget trees this is
+  /// O(listeners²) per element. CPU profiles of simply scrolling a list of
+  /// Consumer widgets in a debug build attributed 8-12% of UI-thread time to
+  /// these checks, distorting profiles and slowing debug-mode development.
+  ///
+  /// Defaults to true (matching upstream riverpod behavior). Apps that want
+  /// representative debug-mode profiles / faster debug builds can set this
+  /// to false at startup via [riverpodDebugValidateInternalState].
+  static bool debugValidateInternalState = true;
+
   void _assertValidInternalPauseState() {
-    if (!kDebugMode) return;
+    if (!kDebugMode || !debugValidateInternalState) return;
 
     final closedSubs = [
       ...?subscriptions,
@@ -1143,6 +1176,7 @@ The provider ${_debugCurrentlyBuildingElement!.origin} modified $origin while bu
   }
 
   void _assertContainsDependent(ProviderSubscription sub) {
+    if (!kDebugMode || !debugValidateInternalState) return;
     assert(
       sub.impl.$hasParent || [...weakDependents, ...?dependents].contains(sub),
       '''
