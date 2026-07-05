@@ -73,6 +73,15 @@ class ProviderScheduler {
   var _taskUsesVsync = false;
   var _pendingTaskNeedsRefresh = false;
 
+  /// Whether [_task] is currently executing synchronously.
+  ///
+  /// While true, [_pendingTask] may legitimately be non-null and completed
+  /// (work scheduled by an ongoing flush/dispose is drained by [_task]'s own
+  /// loops). Observed from anywhere else, a completed pending task means a
+  /// previous [_task] aborted mid-flight; [_scheduleTask] recovers from that
+  /// instead of silently dropping all future work.
+  var _executingTask = false;
+
   /// Schedules a provider to be refreshed.
   ///
   /// The refresh will happen at the end of the next event-loop,
@@ -98,9 +107,29 @@ class ProviderScheduler {
 
     final pendingTask = _pendingTask;
     if (pendingTask != null) {
-      if (pendingTask.completed) return;
+      if (pendingTask.completed) {
+        // A completed task still registered as pending is normal while
+        // _task() is running (its index-based loops pick up entries added
+        // during the flush/dispose passes). Outside of that, it means a
+        // previous _task() aborted mid-flight (it should no longer be
+        // possible now that _task() is exception-safe, but the failure mode
+        // is catastrophic: every subsequent refresh/dispose would be
+        // silently dropped, freezing all provider updates until process
+        // restart). Recover by discarding the stale task and scheduling a
+        // fresh one.
+        if (_executingTask) return;
 
-      if (taskNeedsRefresh && !_pendingTaskNeedsRefresh) {
+        if (!(_pendingTaskCompleter?.isCompleted ?? true)) {
+          _pendingTaskCompleter!.complete();
+        }
+        _pendingTask = null;
+        _pendingTaskCompleter = null;
+        _cancelTask?.call();
+        _cancelTask = null;
+        _taskUsesVsync = false;
+        _pendingTaskNeedsRefresh = false;
+        // Fall through to schedule a new task.
+      } else if (taskNeedsRefresh && !_pendingTaskNeedsRefresh) {
         _pendingTaskNeedsRefresh = true;
         if (!_taskUsesVsync) {
           _cancelTask?.call();
@@ -110,9 +139,11 @@ class ProviderScheduler {
           );
           _taskUsesVsync = true;
         }
-      }
 
-      return;
+        return;
+      } else {
+        return;
+      }
     }
 
     _pendingTaskCompleter = Completer<void>();
@@ -165,13 +196,34 @@ class ProviderScheduler {
     if (pendingTask == null || pendingTaskCompleter == null) return;
     pendingTaskCompleter.complete();
 
-    _performRefresh();
-    _performDispose();
-    stateToRefresh.clear();
-    _stateToDispose.clear();
-    _pendingTask = null;
-
-    _pendingTaskCompleter = null;
+    _executingTask = true;
+    try {
+      final refreshedCount = _performRefresh(0);
+      _performDispose();
+      // `ref.onDispose` callbacks may invalidate other providers, appending
+      // to [stateToRefresh] *after* the refresh pass above. Flush those too:
+      // the clear() below would otherwise silently drop them, leaving those
+      // providers dirty-but-unflushed until something happens to read them.
+      if (stateToRefresh.length > refreshedCount) {
+        _performRefresh(refreshedCount);
+      }
+    } finally {
+      // Reset the scheduler state unconditionally.
+      //
+      // Before this was exception-safe, a single error escaping a provider
+      // rebuild (e.g. a throwing `updateShouldNotify`/`==` during
+      // _performRebuild, or an internal bookkeeping error) left the completed
+      // task registered in [_pendingTask] forever. [_scheduleTask] then
+      // early-returned on every subsequent call, permanently wedging *all*
+      // scheduled refreshes and disposals for this container: derived
+      // providers stopped rebuilding and autoDispose providers stopped being
+      // disposed (a leak), app-wide, until process restart.
+      stateToRefresh.clear();
+      _stateToDispose.clear();
+      _pendingTask = null;
+      _pendingTaskCompleter = null;
+      _executingTask = false;
+    }
   }
 
   void debugNotifyDidBuild(ProviderElement element) {
@@ -186,17 +238,31 @@ class ProviderScheduler {
   }
 
   Set<ProviderElement>? _builtWithinFrame;
-  void _performRefresh() {
+
+  /// Flushes entries of [stateToRefresh], starting at index [from].
+  ///
+  /// Returns the number of entries processed, so that callers can resume
+  /// from that index if new entries were appended in the meantime.
+  int _performRefresh(int from) {
     if (kDebugMode) _builtWithinFrame = {};
 
     /// No need to traverse entries from top to bottom, because refreshing a
     /// child will automatically refresh its parent when it will try to read it
-    for (var i = 0; i < stateToRefresh.length; i++) {
+    for (var i = from; i < stateToRefresh.length; i++) {
       final element = stateToRefresh[i];
-      if (element.isActive) element.flush();
+      if (!element.isActive) continue;
+      try {
+        element.flush();
+      } catch (err, stack) {
+        // Guarded so that one provider failing to rebuild cannot prevent
+        // the other scheduled providers from rebuilding, nor wedge the
+        // scheduler itself (see _task).
+        element.container.defaultOnError(err, stack);
+      }
     }
 
     if (kDebugMode) _builtWithinFrame = null;
+    return stateToRefresh.length;
   }
 
   void debugScheduleFrame(void Function() onEvent) {
@@ -241,14 +307,46 @@ class ProviderScheduler {
         continue;
       }
 
-      if (element.weakDependents.isEmpty) {
-        element.container._disposeProvider(element.origin);
-      } else {
-        // Don't delete the pointer if there are some "weak" listeners active.
-        element.clearState();
+      try {
+        if (element.weakDependents.isEmpty) {
+          element.container._disposeProvider(element.origin);
+        } else {
+          // Don't delete the pointer if there are some "weak" listeners active.
+          element.clearState();
+        }
+      } catch (err, stack) {
+        // Guarded so that one provider failing to dispose cannot prevent
+        // the other scheduled providers from being disposed, nor wedge the
+        // scheduler itself (see _task).
+        element.container.defaultOnError(err, stack);
       }
     }
   }
+
+  /// Diagnostic snapshot of the scheduler's internal state.
+  ///
+  /// Intended for app-level watchdogs that want to detect a wedged
+  /// scheduler in release builds: because [_task] runs synchronously,
+  /// observing `hasPendingTask && pendingTaskCompleted && !executingTask`
+  /// from the event loop means scheduled work is no longer being processed.
+  ({
+    bool hasPendingTask,
+    bool pendingTaskCompleted,
+    bool executingTask,
+    int pendingRefreshCount,
+    int pendingDisposeCount,
+    int vsyncCount,
+    bool disposed,
+  })
+  get health => (
+    hasPendingTask: _pendingTask != null,
+    pendingTaskCompleted: _pendingTask?.completed ?? false,
+    executingTask: _executingTask,
+    pendingRefreshCount: stateToRefresh.length,
+    pendingDisposeCount: _stateToDispose.length,
+    vsyncCount: flutterVsyncs.length,
+    disposed: _disposed,
+  );
 
   /// Disposes the scheduler.
   void dispose() {

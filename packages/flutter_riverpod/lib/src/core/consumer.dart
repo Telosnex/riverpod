@@ -406,7 +406,30 @@ class _TickerModeHub {
     // mark elements dirty, and a TickerMode flip is rare (route
     // transitions), so the allocation is irrelevant.
     for (final element in _elements.toList()) {
-      element._updateTickerMode();
+      try {
+        element._updateTickerMode();
+      } catch (exception, stack) {
+        // Isolate elements from one another, matching upstream semantics:
+        // upstream registers one listener per element and
+        // ChangeNotifier.notifyListeners catches each listener's exceptions
+        // individually. With the hub multiplexing every element behind a
+        // single listener, an exception thrown by one element (e.g. a
+        // provider rebuild triggered synchronously by resuming its
+        // subscriptions) would otherwise skip all remaining elements --
+        // leaving their subscriptions permanently paused while visible:
+        // their widgets would show stale provider values until the *next*
+        // full TickerMode off/on cycle on the same notifier, if any.
+        FlutterError.reportError(
+          FlutterErrorDetails(
+            exception: exception,
+            stack: stack,
+            library: 'flutter_riverpod',
+            context: ErrorDescription(
+              'while updating the TickerMode pause state of a Consumer',
+            ),
+          ),
+        );
+      }
     }
   }
 }
@@ -483,6 +506,34 @@ base class ConsumerStatefulElement extends StatefulElement
         }
       }
     }
+  }
+
+  /// Diagnostic snapshot of this element's TickerMode pause wiring.
+  ///
+  /// Intended for app-level watchdogs that want to detect, in release
+  /// builds, consumers whose subscriptions are stuck paused while their
+  /// surrounding [TickerMode] is enabled (or vice versa).
+  ///
+  /// - `isActive` is the pause state this element last applied to its
+  ///   subscriptions (null before the first build).
+  /// - `notifierValue` is the current value of the [TickerMode] notifier
+  ///   this element is subscribed to (null before the first build).
+  ///
+  /// A persistent `isActive != notifierValue` indicates a missed
+  /// notification; [resyncTickerMode] repairs it.
+  @internal
+  ({bool? isActive, bool? notifierValue}) get tickerModeHealth =>
+      (isActive: _isActive, notifierValue: _tickerModeNotifier?.value);
+
+  /// Re-derives the TickerMode pause state from the current notifier value,
+  /// pausing/resuming subscriptions if they are out of sync.
+  ///
+  /// Safe to call at any time; no-op when already in sync or before the
+  /// first build.
+  @internal
+  void resyncTickerMode() {
+    if (_tickerModeNotifier == null) return;
+    _updateTickerMode();
   }
 
   @override
