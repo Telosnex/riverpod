@@ -296,6 +296,21 @@ final class _UncontrolledProviderScopeState
     task?.call();
   }
 
+  /// [ProviderTrace] emit, gated on a traced provider actually being queued
+  /// so an enabled trace in a large app stays silent for unrelated refreshes.
+  void _trace(String event, [Map<String, Object?> fields = const {}]) {
+    final scheduler = widget.container.scheduler;
+    if (!ProviderTrace.anyPendingMatches(scheduler)) return;
+    final element = context as Element;
+    ProviderTrace.emit('vsync.$event', null, {
+      'scopeDirty': element.dirty,
+      'scopeDepth': element.depth,
+      'hasTask': _task != null,
+      'taskCompleted': _task?.completed,
+      ...fields,
+    });
+  }
+
   /// Whether calling [setState] right now would be accepted by the framework.
   ///
   /// Calling [setState] while the framework is building another widget is
@@ -362,7 +377,9 @@ final class _UncontrolledProviderScopeState
     _cancelAsyncTask = null;
 
     _task = task;
-    if (_canMarkNeedsBuild()) {
+    final canMark = _canMarkNeedsBuild();
+    _trace('scheduleRefresh', {'canMarkNeedsBuild': canMark});
+    if (canMark) {
       setState(() {});
     }
 
@@ -370,11 +387,13 @@ final class _UncontrolledProviderScopeState
     _vsyncTimer = Timer(Duration.zero, () {
       _vsyncTimer = null;
       if (_task == null) return;
+      _trace('timerSetState');
       if (mounted) setState(() {});
 
       _vsyncTimOutTimer?.cancel();
       _vsyncTimOutTimer = Timer(Duration.zero, () {
         _vsyncTimOutTimer = null;
+        _trace('timeoutCallTask');
         _callTask();
       });
     });
@@ -451,6 +470,7 @@ To fix this problem, you have one of two solutions:
 
   @override
   Widget build(BuildContext context) {
+    if (_task != null) _trace('buildCallTask');
     _callTask();
 
     return _UncontrolledProviderScope(

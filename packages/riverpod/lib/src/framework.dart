@@ -24,6 +24,7 @@ part 'framework.g.dart';
 
 part 'core/base_ref.dart';
 part 'core/element.dart';
+part 'core/provider_trace.dart';
 part 'core/family.dart';
 part 'core/foundation.dart';
 part 'core/modifiers/future.dart';

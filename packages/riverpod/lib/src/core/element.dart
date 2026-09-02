@@ -716,6 +716,13 @@ depending on itself.
     _maybeRebuildDependencies();
     if (_mustRecomputeState) {
       _mustRecomputeState = false;
+      if (ProviderTrace.matches(this)) {
+        // fromTask=false means a consumer/dependent read flushed this
+        // provider synchronously instead of the scheduler's refresh task.
+        ProviderTrace.emit('flush', this, {
+          'fromTask': container.scheduler._executingTask,
+        });
+      }
       _performRebuild();
     }
   }
@@ -828,6 +835,13 @@ The provider ${_debugCurrentlyBuildingElement!.origin} modified $origin while bu
     if (_mustRecomputeState) return;
 
     _mustRecomputeState = true;
+    if (ProviderTrace.matches(this)) {
+      ProviderTrace.emit('markDirty', this, {
+        'manual': manual,
+        'asReload': asReload,
+        'listeners': listenerCount,
+      });
+    }
 
     // Call manual invalidation listeners before runOnDispose clears them
     if (manual) _runManualInvalidationCallbacks(container, ref);

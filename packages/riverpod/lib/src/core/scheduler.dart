@@ -93,6 +93,16 @@ class ProviderScheduler {
     );
     stateToRefresh.add(element);
 
+    if (ProviderTrace.matches(element)) {
+      ProviderTrace.emit('scheduleRefresh', element, {
+        'hadPending': _pendingTask != null,
+        'pendingCompleted': _pendingTask?.completed,
+        'pendingNeedsRefresh': _pendingTaskNeedsRefresh,
+        'executing': _executingTask,
+        'queue': stateToRefresh.length,
+      });
+    }
+
     _scheduleTask(taskNeedsRefresh: true);
   }
 
@@ -195,6 +205,10 @@ class ProviderScheduler {
     final pendingTaskCompleter = _pendingTaskCompleter;
     if (pendingTask == null || pendingTaskCompleter == null) return;
     pendingTaskCompleter.complete();
+
+    if (ProviderTrace.anyPendingMatches(this)) {
+      ProviderTrace.emit('taskRun', null, {'queue': stateToRefresh.length});
+    }
 
     _executingTask = true;
     try {
