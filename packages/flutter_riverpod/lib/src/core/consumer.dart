@@ -522,8 +522,10 @@ base class ConsumerStatefulElement extends StatefulElement
   /// A persistent `isActive != notifierValue` indicates a missed
   /// notification; [resyncTickerMode] repairs it.
   @internal
-  ({bool? isActive, bool? notifierValue}) get tickerModeHealth =>
-      (isActive: _isActive, notifierValue: _tickerModeNotifier?.value);
+  ({bool? isActive, bool? notifierValue}) get tickerModeHealth => (
+    isActive: _isActive,
+    notifierValue: _tickerModeNotifier?.value,
+  );
 
   /// Re-derives the TickerMode pause state from the current notifier value,
   /// pausing/resuming subscriptions if they are out of sync.
@@ -549,6 +551,21 @@ base class ConsumerStatefulElement extends StatefulElement
     }
   }
 
+  /// Provider notifications can arrive while another element is building
+  /// (its `ref.watch` flushed a dirty provider we also watch). If this element
+  /// is not a descendant of that element, marking it now would be dropped by
+  /// the framework and wedge it (see [RiverpodBuildTarget]); defer instead.
+  void _markNeedsBuildSafely() {
+    if (!mounted) return;
+    if (canMarkNeedsBuildNow(this, whenUnknown: true)) {
+      markNeedsBuild();
+      return;
+    }
+    deferMarkNeedsBuild(() {
+      if (mounted) markNeedsBuild();
+    });
+  }
+
   @override
   Widget build() {
     if (_tickerModeNotifier == null) {
@@ -562,7 +579,7 @@ base class ConsumerStatefulElement extends StatefulElement
       }
       _listeners.clear();
       _dependencies = {};
-      return super.build();
+      return RiverpodBuildTarget.run(this, super.build);
     } finally {
       for (final dep in _oldDependencies!.values) {
         dep.close();
@@ -594,7 +611,7 @@ base class ConsumerStatefulElement extends StatefulElement
 
               final sub = container.listen<StateT>(
                 target,
-                (_, _) => markNeedsBuild(),
+                (_, _) => _markNeedsBuildSafely(),
               );
               _applyTickerMode(sub);
               return sub;
