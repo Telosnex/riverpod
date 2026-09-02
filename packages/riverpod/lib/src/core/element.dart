@@ -721,6 +721,11 @@ depending on itself.
         // provider synchronously instead of the scheduler's refresh task.
         ProviderTrace.emit('flush', this, {
           'fromTask': container.scheduler._executingTask,
+          // An inactive provider is skipped by the scheduler task, so it stays
+          // dirty until the next read flushes it (possibly mid-build).
+          'active': isActive,
+          'listeners': listenerCount,
+          'paused': pausedActiveSubscriptionCount,
         });
       }
       _performRebuild();
