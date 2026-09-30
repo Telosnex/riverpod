@@ -321,6 +321,18 @@ mixin ElementWithFuture<StateT, ValueT> on ProviderElement<StateT, ValueT> {
   }
 
   @override
+  void clearState() {
+    super.clearState();
+
+    // Weak listeners keep the element alive after its state is cleared. Its
+    // completed future also owns the previous value/error, so release that
+    // cache without notifying listeners or closing their subscriptions.
+    // Pending futures must survive retirement: the next build will settle
+    // the same completer, as it does on invalidation.
+    if (_futureCompleter == null) futureNotifier.result = null;
+  }
+
+  @override
   void dispose() {
     final completer = _futureCompleter;
     if (completer != null) {
