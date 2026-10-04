@@ -1,3 +1,7 @@
+## Unreleased
+
+- Support analyzer 13 and 14. Require Dart 3.13.
+
 ## 3.1.4 - 2026-06-10
 ### Dependency changes
 

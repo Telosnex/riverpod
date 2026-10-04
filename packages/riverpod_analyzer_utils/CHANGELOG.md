@@ -1,3 +1,7 @@
+## Unreleased
+
+- Support analyzer 13 and 14, and Freezed 4. Require Dart 3.13.
+
 ## 1.0.0-dev.10 - 2026-04-23
 
 Support analyzer 12

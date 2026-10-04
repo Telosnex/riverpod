@@ -1,3 +1,7 @@
+## Unreleased
+
+- Support analyzer 13 and 14, and Freezed 4. Require Dart 3.13.
+
 ## 4.0.4 - 2026-06-10
 
 - Fix `AsyncNotifierProvider`/`StreamNotifierProvider` disposing dependencies

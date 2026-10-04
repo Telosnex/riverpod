@@ -2,7 +2,7 @@ name: workspace
 publish_to: none
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.13.0
 
 workspace:
   - benchmarks
@@ -37,3 +37,7 @@ workspace:
   - tools/generate_providers
   - other_projects/devtool_debug_app
   - website
+
+# Analyzer 14 needs a newer test package than Flutter 3.47 currently pins.
+dependency_overrides:
+  test_api: ^0.7.14
