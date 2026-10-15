@@ -753,7 +753,13 @@ depending on itself.
 
     _dependencyMayHaveChanged = false;
 
-    visitAncestors((element) => element.flush());
+    visitAncestors((element) {
+      // Only weak subscriptions can point to an unmounted element: listening
+      // strongly mounts it, and clearState closes all strong subscriptions.
+      // Such an element has no state to refresh, and weak listeners must not
+      // initialize it. It mounts when something reads it.
+      if (element._didMount) element.flush();
+    });
   }
 
   // Hook for async provider to init state with AsyncLoading

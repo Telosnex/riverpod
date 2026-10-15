@@ -1209,6 +1209,47 @@ void main() {
           },
         );
 
+        test(
+          'refreshing a dependent does not re-initialize a cleared provider '
+          'that only has weak listeners',
+          () async {
+            final container = ProviderContainer.test();
+            var clearedBuilds = 0;
+            final cleared = Provider.autoDispose((ref) => clearedBuilds++);
+            final active = StateProvider.autoDispose((ref) => 0);
+            final cache = Provider((ref) {
+              ref.listen(cleared, weak: true, (previous, next) {});
+              ref.listen(active, weak: true, (previous, next) {});
+            });
+            container.listen(cache, (previous, next) {});
+            container.listen(active, (previous, next) {});
+
+            // Use `cleared`, then stop. The weak listener keeps its element,
+            // but its state is cleared.
+            container.listen(cleared, (previous, next) {}).close();
+            await container.pump();
+            expect(clearedBuilds, 1);
+            expect(
+              container.pointerManager.orphanPointers.pointers[cleared]!
+                  .element!
+                  .stateResult(),
+              isNull,
+            );
+
+            // Another weakly listened provider changes, then the cache is
+            // read. Nothing reads `cleared`.
+            container.invalidate(active);
+            container.read(cache);
+            await container.pump();
+
+            expect(clearedBuilds, 1);
+
+            // Reading `cleared` initializes it as usual.
+            expect(container.read(cleared), 1);
+            expect(clearedBuilds, 2);
+          },
+        );
+
         test('closing the subscription removes the listener', () {
           final container = ProviderContainer.test();
           final provider = Provider((ref) => Object());
