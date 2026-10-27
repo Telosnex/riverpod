@@ -429,7 +429,7 @@ void main() {
       verifyZeroInteractions(onDispose);
 
       completer.complete();
-      await completer.future;
+      await f;
       await container.pump();
 
       verifyOnly(onDispose, onDispose.call());
