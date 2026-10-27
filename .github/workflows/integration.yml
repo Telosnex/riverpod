@@ -78,7 +78,8 @@ jobs:
           compiler: ${{ matrix.compiler }}
           working-directory: packages/riverpod
 
-  # flutter test runs in Chrome only.
+  # flutter test runs in Chrome only. Without --wasm it compiles with DDC,
+  # not dart2js.
   web-flutter:
     name: ${{ matrix.name }}
     runs-on: ubuntu-24.04
@@ -87,7 +88,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: Web Linux x64 Chrome dart2js Flutter, compiler: dart2js }
+          - { name: Web Linux x64 Chrome DDC Flutter, compiler: ddc }
           - { name: Web Linux x64 Chrome dart2wasm Flutter, compiler: dart2wasm }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
