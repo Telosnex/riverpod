@@ -420,7 +420,12 @@ final class MutationImpl<ResultT>
 
         return result;
       } catch (error, stackTrace) {
-        mut._mutationErrored(sub, ref, error, stackTrace);
+        mut._mutationErrored(
+          sub,
+          ref,
+          error,
+          caughtStackTrace(error, stackTrace),
+        );
 
         rethrow;
       } finally {
