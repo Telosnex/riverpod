@@ -24,4 +24,6 @@ export 'src/internals.dart'
         AsyncResult,
         AsyncValueExtensions,
         AsyncValueIsLoadingException,
-        riverpodDebugValidateInternalState;
+        riverpodDebugValidateInternalState,
+        debugTrackProviderCreation,
+        debugRiverpodDevtoolEnabled;
