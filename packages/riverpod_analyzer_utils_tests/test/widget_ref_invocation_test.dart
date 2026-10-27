@@ -52,6 +52,9 @@ class Example extends ConsumerWidget {
     (resolver, unit, units) async {
       final result = await resolver.resolveRiverpodAnalysisResult(
         ignoreErrors: true,
+        // ProviderFor asserts its value is a function or a type. Analyzer 14.6
+        // reports the bogus value as a compile error, which this test allows.
+        allowedCompilerErrorCodes: {'const_eval_throws_exception'},
       );
 
       expect(result.widgetRefWatchInvocations, hasLength(1));
