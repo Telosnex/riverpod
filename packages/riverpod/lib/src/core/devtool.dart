@@ -445,7 +445,7 @@ final class ConsumerMeta {
 }
 
 /// An observer who's responsible for communicating with the Riverpod devtool
-@visibleForTesting
+@internal
 final class DevtoolObserver extends ProviderObserver {
   /// An observer who's responsible for communicating with the Riverpod devtool
   const DevtoolObserver();
