@@ -113,3 +113,12 @@ jobs:
           args=(--no-pub --platform chrome)
           [[ "$COMPILER" == dart2wasm ]] && args+=(--wasm)
           flutter test "${args[@]}"
+      # The DevTools extension: browser only (dart:js_interop). Not with
+      # dart2wasm: the extension ships as a dart2js build (devtools_extensions
+      # build_and_copy), and dart2wasm in Dart 3.13.1 hangs while loading
+      # test/src/vm_service/eval_test.dart (a miscompile triggered by
+      # devtools_app_shared's EvalOnDartLibrary constructor).
+      - name: riverpod_devtool
+        if: ${{ !cancelled() && matrix.compiler == 'ddc' }}
+        working-directory: packages/riverpod_devtool
+        run: flutter test --no-pub --platform chrome
