@@ -1,4 +1,6 @@
-// ignore_for_file: unnecessary_async
+// Snippets are test code shown outside test/ on the docs site, so the
+// test-only APIs they use (e.g. ProviderContainer.test) are expected here.
+// ignore_for_file: unnecessary_async, invalid_use_of_visible_for_testing_member
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
