@@ -94,11 +94,26 @@ extension LegacyProviderDeclarationX on VariableDeclaration {
           }
         }
 
+        // The analyzer resolves `Provider.family(...)` and
+        // `Provider.autoDispose(...)` as a PrefixedIdentifier on some versions
+        // (14.6), and as a PropertyAccess on others (14.4).
+        // Chained modifiers such as `Provider.autoDispose.family(...)` are
+        // always a PropertyAccess.
         final modifier = initializer.function;
-        if (modifier is! PropertyAccess) return null;
+        final SimpleIdentifier propertyName;
+        final Expression? target;
+        if (modifier is PropertyAccess) {
+          propertyName = modifier.propertyName;
+          target = modifier.target;
+        } else if (modifier is PrefixedIdentifier) {
+          propertyName = modifier.identifier;
+          target = modifier.prefix;
+        } else {
+          return null;
+        }
 
-        decodeIdentifier(modifier.propertyName);
-        decodeTarget(modifier.target);
+        decodeIdentifier(propertyName);
+        decodeTarget(target);
         arguments = initializer.argumentList;
         typeArguments = initializer.typeArguments;
       } else {
