@@ -1522,9 +1522,12 @@ void main() {
             .whenData<String>(
               (value) => Error.throwWithStackTrace(84, StackTrace.empty),
             ),
-        const AsyncLoading<String>(
-          progress: .1,
-        ).copyWithPrevious(const AsyncError(84, StackTrace.empty)),
+        isAsyncError<String>(
+          84,
+          stackTrace: isSameStackTrace(StackTrace.empty),
+          isLoading: true,
+          hasValue: false,
+        ),
       );
 
       expect(

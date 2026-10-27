@@ -291,7 +291,7 @@ void main() {
         fireImmediately: true,
       );
 
-      verifyOnly(listener, listener(err, stack));
+      verifyOnly(listener, listener(err, argThat(isSameStackTrace(stack))));
 
       final notifierSub = container.listen(
         provider.notifier,
@@ -308,7 +308,7 @@ void main() {
         fireImmediately: true,
       );
 
-      verifyOnly(listener, listener(err, stack));
+      verifyOnly(listener, listener(err, argThat(isSameStackTrace(stack))));
 
       expect(stateSub.read, throwsProviderException(isUnimplementedError));
       expect(notifierSub.read, throwsProviderException(isUnimplementedError));
@@ -370,7 +370,7 @@ void main() {
         );
         final notifier = container.read(provider.notifier);
 
-        verifyOnly(onError, onError(err, stack));
+        verifyOnly(onError, onError(err, argThat(isSameStackTrace(stack))));
         verifyZeroInteractions(listener);
 
         expect(() => notifier.state, throwsA(anything));
@@ -455,7 +455,10 @@ void main() {
 
         expect(() => container.read(provider), throwsA(anything));
 
-        verifyOnly(onError, onError(42, StackTrace.empty));
+        verifyOnly(
+          onError,
+          onError(42, argThat(isSameStackTrace(StackTrace.empty))),
+        );
       });
     });
 

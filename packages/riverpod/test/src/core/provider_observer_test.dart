@@ -484,7 +484,7 @@ void main() {
                 isProviderObserverContext(provider: provider, container: child),
               ),
               'error',
-              StackTrace.empty,
+              argThat(isSameStackTrace(StackTrace.empty)),
             ),
           ]);
           verifyInOrder([
@@ -505,7 +505,7 @@ void main() {
                 isProviderObserverContext(provider: provider, container: child),
               ),
               'error',
-              StackTrace.empty,
+              argThat(isSameStackTrace(StackTrace.empty)),
             ),
           ]);
           verifyInOrder([
@@ -526,7 +526,7 @@ void main() {
                 isProviderObserverContext(provider: provider, container: child),
               ),
               'error',
-              StackTrace.empty,
+              argThat(isSameStackTrace(StackTrace.empty)),
             ),
           ]);
           verifyNever(observer3.didUpdateProvider(any, any, any));

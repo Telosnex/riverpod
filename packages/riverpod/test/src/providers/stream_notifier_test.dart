@@ -173,7 +173,11 @@ void main() {
 
           expect(
             sub.read(),
-            isAsyncLoading<int>(error: err, stackTrace: stack, retrying: true),
+            isAsyncLoading<int>(
+              error: err,
+              stackTrace: isSameStackTrace(stack),
+              retrying: true,
+            ),
           );
 
           err = Exception('bar');
@@ -185,7 +189,11 @@ void main() {
 
           expect(
             sub.read(),
-            isAsyncLoading<int>(error: err, stackTrace: stack, retrying: true),
+            isAsyncLoading<int>(
+              error: err,
+              stackTrace: isSameStackTrace(stack),
+              retrying: true,
+            ),
           );
         }),
       );
@@ -449,7 +457,12 @@ void main() {
           listener,
           listener(
             const AsyncLoading<int>(),
-            const AsyncError<int>(42, StackTrace.empty),
+            argThat(
+              isAsyncError<int>(
+                42,
+                stackTrace: isSameStackTrace(StackTrace.empty),
+              ),
+            ),
           ),
         );
         verifyZeroInteractions(onError);
@@ -460,7 +473,12 @@ void main() {
         verifyOnly(
           listener,
           listener(
-            const AsyncError<int>(42, StackTrace.empty),
+            argThat(
+              isAsyncError<int>(
+                42,
+                stackTrace: isSameStackTrace(StackTrace.empty),
+              ),
+            ),
             const AsyncData<int>(42),
           ),
         );
@@ -540,7 +558,15 @@ void main() {
 
         verifyOnly(
           listener,
-          listener(null, const AsyncError(0, StackTrace.empty)),
+          listener(
+            argThat(isNull),
+            argThat(
+              isAsyncError<int>(
+                0,
+                stackTrace: isSameStackTrace(StackTrace.empty),
+              ),
+            ),
+          ),
         );
         expect(
           () => container.read(provider.notifier),
@@ -564,11 +590,22 @@ void main() {
 
         verifyOnly(
           listener,
-          listener(null, const AsyncError(42, StackTrace.empty)),
+          listener(
+            argThat(isNull),
+            argThat(
+              isAsyncError<int>(
+                42,
+                stackTrace: isSameStackTrace(StackTrace.empty),
+              ),
+            ),
+          ),
         );
         expect(
           container.read(provider.notifier).state,
-          const AsyncError<int>(42, StackTrace.empty),
+          isAsyncError<int>(
+            42,
+            stackTrace: isSameStackTrace(StackTrace.empty),
+          ),
         );
         await expectLater(container.read(provider.future), throwsA(42));
       },
@@ -946,7 +983,10 @@ void main() {
 
         expect(
           container.read(provider),
-          const AsyncError<int>(42, StackTrace.empty),
+          isAsyncError<int>(
+            42,
+            stackTrace: isSameStackTrace(StackTrace.empty),
+          ),
         );
 
         await expectLater(
@@ -965,7 +1005,7 @@ void main() {
         );
         expect(callCount, 0);
         expect(actualErr, 42);
-        expect(actualStack, StackTrace.empty);
+        expect(actualStack, isSameStackTrace(StackTrace.empty));
         expect(container.read(provider), const AsyncData(21));
       });
 
@@ -1005,7 +1045,10 @@ void main() {
 
           expect(
             container.read(provider),
-            const AsyncError<int>(42, StackTrace.empty),
+            isAsyncError<int>(
+              42,
+              stackTrace: isSameStackTrace(StackTrace.empty),
+            ),
           );
 
           await expectLater(
@@ -1019,7 +1062,10 @@ void main() {
           expect(callCount, 0);
           expect(
             container.read(provider),
-            const AsyncError<int>(42, StackTrace.empty),
+            isAsyncError<int>(
+              42,
+              stackTrace: isSameStackTrace(StackTrace.empty),
+            ),
           );
         },
       );
