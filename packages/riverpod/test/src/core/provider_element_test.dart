@@ -214,8 +214,17 @@ void main() {
       () async {
         final container = ProviderContainer.test();
         final depProvider = Provider.family<int, String>((ref, _) => 0);
-        final futureP = FutureProvider<Ref>(Future.value);
-        final streamP = StreamProvider<Ref>(Stream.value);
+        // The recomputations of futureP and streamP wait for `gate`, so that
+        // they are still pending when `pump` returns on every platform.
+        var gate = Future<void>.value();
+        final futureP = FutureProvider<Ref>((ref) async {
+          await gate;
+          return ref;
+        });
+        final streamP = StreamProvider<Ref>((ref) async* {
+          await gate;
+          yield ref;
+        });
         final p = Provider<Ref>((ref) => ref);
 
         final depP = container.readProviderElement(depProvider('p'));
@@ -230,6 +239,8 @@ void main() {
           depProvider('s'),
         );
 
+        final completer = Completer<void>();
+        gate = completer.future;
         container.invalidate(p);
         container.invalidate(futureP);
         container.invalidate(streamP);
@@ -250,6 +261,7 @@ void main() {
         expect(depF.isActive, false);
         expect(depS.isActive, false);
 
+        completer.complete();
         await container.read(streamP.future);
         await container.read(futureP.future);
 
