@@ -46,19 +46,12 @@ jobs:
         with:
           message: 'flutter pub get changed files. Commit them alone as "chore: flutter <version> debris".'
       # Errors and warnings fail; infos (lints that newer SDKs added) do not.
-      # dart analyze, not flutter analyze: only dart analyze runs the analyzer
-      # plugins of analysis_options.yaml (riverpod_lint, internal_lint), and
-      # it fails when a plugin crashes. website/ (documentation snippets) is
-      # left out.
+      # From the repository root: the analyzer plugins (riverpod_lint,
+      # internal_lint) are configured in the root analysis_options.yaml, and
+      # `dart analyze packages` misses their diagnostics. flutter analyze
+      # does not run them at all. A plugin crash also fails.
       - name: Analyze
-        run: |
-          status=0
-          for dir in packages examples benchmarks tools other_projects; do
-            echo "::group::$dir"
-            dart analyze "$dir" || status=1
-            echo "::endgroup::"
-          done
-          exit $status
+        run: dart analyze
 
   generated:
     name: Generated code
