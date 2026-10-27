@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:mockito/mockito.dart';
 import 'package:riverpod/legacy.dart';
 import 'package:riverpod/misc.dart';
@@ -555,7 +557,12 @@ void main() {
       (_) => notifier,
     );
     var callCount = 0;
+    // Holds the computation until the test releases it, so that whether the
+    // stream has already emitted when `pump` returns does not depend on the
+    // number of microtasks each platform takes to resume an `async*` body.
+    var gate = Future<void>.value();
     final computed = StreamProvider(name: 'computed', (ref) async* {
+      await gate;
       callCount++;
       yield ref.watch(provider);
     });
@@ -570,6 +577,8 @@ void main() {
     expect(sub.read(), const AsyncValue<int>.data(0));
     expect(callCount, 1);
 
+    final completer = Completer<void>();
+    gate = completer.future;
     notifier.setState(42);
     await container.pump();
 
@@ -582,6 +591,7 @@ void main() {
     );
     expect(callCount, 1);
 
+    completer.complete();
     await container.read(computed.future);
 
     expect(sub.read(), const AsyncValue<int>.data(42));
