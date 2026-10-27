@@ -28,7 +28,7 @@ final class MutationTransaction {
 
     final sub = _container.listen<StateT>(listenable, (_, _) {});
     _subscriptions.add(sub as ProviderSubscription<Object?>);
-    return sub.read();
+    return sub.readSafe().valueOrProviderException;
   }
 
   void _close() {
