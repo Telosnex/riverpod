@@ -43,6 +43,29 @@ final class ManualProviderDependency {
   final ProviderOrFamilyExpression? provider;
 }
 
+/// The identifiers of a dotted name, in source order.
+///
+/// `Provider.autoDispose.family` gives `[Provider, autoDispose, family]`, and
+/// `alias.Provider.family` gives `[alias, Provider, family]`.
+///
+/// Returns null if the expression is not a dotted name.
+List<SimpleIdentifier>? _identifierChain(Expression expression) {
+  if (expression is SimpleIdentifier) return [expression];
+  if (expression is PrefixedIdentifier) {
+    return [expression.prefix, expression.identifier];
+  }
+  if (expression is PropertyAccess) {
+    final target = expression.target;
+    if (target == null) return null;
+
+    final identifiers = _identifierChain(target);
+    if (identifiers == null) return null;
+
+    return [...identifiers, expression.propertyName];
+  }
+  return null;
+}
+
 @_ast
 extension LegacyProviderDeclarationX on VariableDeclaration {
   static final _cache = Expando<Box<ManualProviderDeclaration?>>();
@@ -69,51 +92,28 @@ extension LegacyProviderDeclarationX on VariableDeclaration {
         typeArguments = initializer.constructorName.type.typeArguments;
       } else if (initializer is FunctionExpressionInvocation) {
         // Provider.modifier()
+        // Provider.modifier.modifier()
+        // alias.Provider.modifier()
 
-        void decodeIdentifier(SimpleIdentifier identifier) {
+        final identifiers = _identifierChain(initializer.function);
+        if (identifiers == null || identifiers.length < 2) return null;
+
+        SimpleIdentifier? providerIdentifier;
+        for (final identifier in identifiers) {
           switch (identifier.name) {
             case 'autoDispose':
               autoDisposeModifier = identifier;
             case 'family':
               familyModifier = identifier;
             default:
-              provider = identifier;
+              // The provider comes after any import prefix, and before
+              // its modifiers.
+              providerIdentifier = identifier;
           }
         }
+        if (providerIdentifier == null) return null;
+        provider = providerIdentifier;
 
-        void decodeTarget(Expression? expression) {
-          if (expression is SimpleIdentifier) {
-            decodeIdentifier(expression);
-          } else if (expression is PrefixedIdentifier) {
-            decodeIdentifier(expression.identifier);
-            decodeIdentifier(expression.prefix);
-          } else {
-            throw UnsupportedError(
-              'unknown expression "$expression" (${expression.runtimeType})',
-            );
-          }
-        }
-
-        // The analyzer resolves `Provider.family(...)` and
-        // `Provider.autoDispose(...)` as a PrefixedIdentifier on some versions
-        // (14.6), and as a PropertyAccess on others (14.4).
-        // Chained modifiers such as `Provider.autoDispose.family(...)` are
-        // always a PropertyAccess.
-        final modifier = initializer.function;
-        final SimpleIdentifier propertyName;
-        final Expression? target;
-        if (modifier is PropertyAccess) {
-          propertyName = modifier.propertyName;
-          target = modifier.target;
-        } else if (modifier is PrefixedIdentifier) {
-          propertyName = modifier.identifier;
-          target = modifier.prefix;
-        } else {
-          return null;
-        }
-
-        decodeIdentifier(propertyName);
-        decodeTarget(target);
         arguments = initializer.argumentList;
         typeArguments = initializer.typeArguments;
       } else {
