@@ -1,0 +1,147 @@
+name: Unit
+
+# Analysis, generated code and the VM tests of the packages that the Telosnex
+# app uses (riverpod, flutter_riverpod, hooks_riverpod, riverpod_annotation,
+# riverpod_generator, riverpod_analyzer_utils, riverpod_lint), on every pull
+# request.
+#
+# No format check: most of the tree was formatted by older formatters than
+# Flutter 3.47's (dart format would change ~330 files), and formatting the
+# fork alone would make every upstream merge conflict.
+on:
+  pull_request:
+    branches: [master]
+  push:
+    # ci/** branches run it too: a new workflow cannot be started by hand
+    # before it is on the default branch.
+    branches: [master, 'ci/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unit-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+      # The root pubspec.yaml is a pub workspace: one resolution for every
+      # package and example. pubspec.lock is not committed, so CI resolves the
+      # newest versions that the constraints allow.
+      - run: flutter pub get
+      - uses: Telosnex/telosnex_ci_tools/actions/check-clean-tree@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+        with:
+          message: 'flutter pub get changed files. Commit them alone as "chore: flutter <version> debris".'
+      # Errors and warnings fail; infos (lints that newer SDKs added) do not.
+      # Includes the riverpod_lint and internal_lint analyzer plugins.
+      # website/ (documentation snippets) is left out.
+      - name: Analyze
+        run: flutter analyze --no-pub --no-fatal-infos packages examples benchmarks tools other_projects
+
+  generated:
+    name: Generated code
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+      - run: flutter pub get
+      # One package at a time. scripts/generate.sh runs them in parallel,
+      # which races: the build of packages/riverpod also claims example/ and
+      # deletes example/lib/models.g.dart, so riverpod/example runs after it.
+      # Only the generators of this repository and their fixtures: the
+      # examples' freezed output changes with every freezed release.
+      - name: build_runner
+        run: |
+          for dir in \
+            packages/riverpod_analyzer_utils \
+            packages/riverpod \
+            packages/riverpod/example \
+            packages/riverpod_generator \
+            packages/riverpod_generator/integration/build_yaml; do
+            echo "::group::$dir"
+            (cd "$dir" && dart run build_runner build)
+            echo "::endgroup::"
+          done
+      - uses: Telosnex/telosnex_ci_tools/actions/check-clean-tree@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+        with:
+          message: The generated files are not current. Run the build_runner step of unit.yml and commit the result.
+
+  runtime:
+    name: Runtime tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+      - run: flutter pub get
+      - name: riverpod
+        working-directory: packages/riverpod
+        run: dart test -r expanded
+      - name: flutter_riverpod
+        if: ${{ !cancelled() }}
+        working-directory: packages/flutter_riverpod
+        run: flutter test --no-pub
+      - name: hooks_riverpod
+        if: ${{ !cancelled() }}
+        working-directory: packages/hooks_riverpod
+        run: flutter test --no-pub
+      - name: riverpod_sqflite
+        if: ${{ !cancelled() }}
+        working-directory: packages/riverpod_sqflite
+        run: flutter test --no-pub
+      - name: Examples
+        if: ${{ !cancelled() }}
+        run: |
+          status=0
+          for dir in packages/flutter_riverpod/example packages/hooks_riverpod/example examples/counter examples/todos; do
+            echo "::group::$dir"
+            (cd "$dir" && flutter test --no-pub) || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+  tooling:
+    name: Tooling tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+      - run: flutter pub get
+      - name: riverpod_generator
+        working-directory: packages/riverpod_generator
+        run: dart test -r expanded
+      - name: riverpod_generator build.yaml integration
+        if: ${{ !cancelled() }}
+        working-directory: packages/riverpod_generator/integration/build_yaml
+        run: dart test -r expanded
+      - name: riverpod_analyzer_utils
+        if: ${{ !cancelled() }}
+        working-directory: packages/riverpod_analyzer_utils_tests
+        run: dart test -r expanded
+      # dart test, not flutter test: the tests run the analyzer, which needs
+      # the Dart SDK that flutter test does not provide.
+      - name: riverpod_lint
+        if: ${{ !cancelled() }}
+        working-directory: packages/riverpod_lint_flutter_test
+        run: dart test -r expanded
