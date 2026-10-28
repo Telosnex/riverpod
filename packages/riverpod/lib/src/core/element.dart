@@ -300,7 +300,7 @@ mixin ElementWithFuture<StateT, ValueT> on ProviderElement<StateT, ValueT> {
       // We purposefully want to keep `provider.future` pending when such an
       // exception is thrown, instead of treating it as an error.
     } catch (error, stackTrace) {
-      callOnError(error, stackTrace);
+      callOnError(error, caughtStackTrace(error, stackTrace));
     }
 
     return (onDoneCb) {
@@ -790,7 +790,7 @@ depending on itself.
     } catch (err, stack) {
       if (kDebugMode) _debugDidSetState = true;
 
-      setValue(triggerRetry(err, stack));
+      setValue(triggerRetry(err, caughtStackTrace(err, stack)));
     } finally {
       _insideBuildFrame = false;
       _didBuild = true;

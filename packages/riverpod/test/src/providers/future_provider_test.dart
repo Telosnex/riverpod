@@ -102,7 +102,7 @@ void main() {
             value.error,
             isException.having((e) => '$e', 'toString', 'Exception: foo'),
           );
-          expect(value.stackTrace, stack);
+          expect(value.stackTrace, isSameStackTrace(stack));
           expect(value.value, 42);
           expect(value.isLoading, true);
           expect(value.retrying, true);
@@ -119,7 +119,7 @@ void main() {
             value.error,
             isException.having((e) => '$e', 'toString', 'Exception: bar'),
           );
-          expect(value.stackTrace, stack);
+          expect(value.stackTrace, isSameStackTrace(stack));
           expect(value.value, 42);
           expect(value.isLoading, true);
           expect(value.retrying, true);
@@ -136,7 +136,7 @@ void main() {
             value.error,
             isException.having((e) => '$e', 'toString', 'Exception: baz'),
           );
-          expect(value.stackTrace, stack);
+          expect(value.stackTrace, isSameStackTrace(stack));
           expect(value.isLoading, false);
           expect(value.value, 42);
           expect(value.retrying, false);

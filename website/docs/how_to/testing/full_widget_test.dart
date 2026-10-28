@@ -1,3 +1,6 @@
+// Snippets are test code shown outside test/ on the docs site, so the
+// test-only APIs they use (e.g. ProviderContainer.test) are expected here.
+// ignore_for_file: invalid_use_of_visible_for_testing_member
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

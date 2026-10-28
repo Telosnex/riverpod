@@ -176,7 +176,7 @@ extension AsyncValueExtensions<ValueT> on AsyncValue<ValueT> {
           );
         } catch (err, stack) {
           return AsyncError._(
-            (err: err, stack: stack, retrying: null),
+            (err: err, stack: caughtStackTrace(err, stack), retrying: null),
             loading: d._loading,
             value: null,
           );
@@ -521,7 +521,8 @@ sealed class AsyncValue<ValueT> {
   ]) async {
     try {
       return AsyncValue.data(await future());
-    } catch (err, stack) {
+    } catch (err, caught) {
+      final stack = caughtStackTrace(err, caught);
       if (test == null) {
         return AsyncValue.error(err, stack);
       }
@@ -529,7 +530,7 @@ sealed class AsyncValue<ValueT> {
         return AsyncValue.error(err, stack);
       }
 
-      Error.throwWithStackTrace(err, stack);
+      rethrowWithStackTrace(err, stack);
     }
   }
 
@@ -671,7 +672,7 @@ sealed class AsyncResult<ValueT> extends AsyncValue<ValueT> {
     try {
       return AsyncData(fn());
     } catch (err, stack) {
-      return AsyncError(err, stack);
+      return AsyncError(err, caughtStackTrace(err, stack));
     }
   }
 }

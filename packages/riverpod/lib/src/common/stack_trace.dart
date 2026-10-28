@@ -13,7 +13,43 @@ Never throwProviderException(Object error, StackTrace stackTrace) {
 @internal
 extension ProviderExceptionX on ProviderException {
   Never unwrap(StackTrace stackTrace) =>
-      Error.throwWithStackTrace(exception, stackTrace);
+      rethrowWithStackTrace(exception, stackTrace);
+}
+
+/// The error and stack trace that [rethrowWithStackTrace] threw last.
+Object? _rethrownError;
+StackTrace? _rethrownStackTrace;
+
+/// Rethrows [error] with [stackTrace], like [Error.throwWithStackTrace].
+///
+/// The pair is remembered so that [caughtStackTrace] can restore it.
+@internal
+Never rethrowWithStackTrace(Object error, StackTrace stackTrace) {
+  _rethrownError = error;
+  _rethrownStackTrace = stackTrace;
+  Error.throwWithStackTrace(error, stackTrace);
+}
+
+/// The stack trace to store for [error], given the [caught] stack trace from
+/// its catch clause.
+///
+/// dart2js gives a new [StackTrace] object each time a trace is caught after
+/// [Error.throwWithStackTrace], even when it is the same trace. That breaks
+/// the identity of stack traces compared by [AsyncValue] and [MutationError].
+/// When [error] is the one that [rethrowWithStackTrace] threw last and [caught]
+/// has the same contents, this returns the trace that was thrown. Otherwise it
+/// returns [caught].
+@internal
+StackTrace caughtStackTrace(Object error, StackTrace caught) {
+  final thrown = _rethrownStackTrace;
+  if (thrown == null || !identical(error, _rethrownError)) return caught;
+  if (!identical(caught, thrown) && caught.toString() != thrown.toString()) {
+    return caught;
+  }
+
+  _rethrownError = null;
+  _rethrownStackTrace = null;
+  return thrown;
 }
 
 /// An exception thrown when trying to read a provider that is in error state.

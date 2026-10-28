@@ -34,4 +34,7 @@ export 'src/internals.dart'
         ProviderListenableSelect,
         AsyncResult,
         AsyncValueExtensions,
-        AsyncValueIsLoadingException;
+        AsyncValueIsLoadingException,
+        riverpodDebugValidateInternalState,
+        debugTrackProviderCreation,
+        debugRiverpodDevtoolEnabled;

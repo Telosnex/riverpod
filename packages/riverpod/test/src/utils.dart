@@ -244,6 +244,34 @@ class OnManualInvalidation extends Mock {
   void call();
 }
 
+bool _probeKeepsStackTraceIdentity() {
+  final stack = StackTrace.current;
+  try {
+    Error.throwWithStackTrace(0, stack);
+  } catch (_, caught) {
+    return identical(caught, stack);
+  }
+}
+
+/// Whether a [StackTrace] keeps its identity once it is caught.
+///
+/// dart2js gives a new [StackTrace] object each time a trace is caught, even
+/// when it was rethrown with [Error.throwWithStackTrace]. Its contents are
+/// unchanged, so there the trace is compared by [StackTrace.toString] instead.
+final _keepsStackTraceIdentity = _probeKeepsStackTraceIdentity();
+
+/// Matches a [StackTrace] that is [expected] itself, as observed after it was
+/// thrown or completed with an error.
+Matcher isSameStackTrace(StackTrace expected) {
+  if (_keepsStackTraceIdentity) return same(expected);
+
+  return isA<StackTrace>().having(
+    (e) => e.toString(),
+    'toString',
+    expected.toString(),
+  );
+}
+
 TypeMatcher<AsyncError<ValueT>> isAsyncError<ValueT>(
   Object? error, {
   Object? stackTrace = const _Sentinel(),

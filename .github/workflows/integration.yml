@@ -1,0 +1,124 @@
+name: Integration
+
+# The runtime packages on every desktop platform and in every browser. Mobile
+# is not here: the packages are pure Dart, and the widget tests run on the VM.
+on:
+  push:
+    # ci/** branches run it too: a new workflow cannot be started by hand
+    # before it is on the default branch.
+    branches: [master, 'ci/**']
+  schedule:
+    - cron: '37 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  vm:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux x64, runner: ubuntu-24.04 }
+          - { name: Linux ARM64, runner: ubuntu-24.04-arm }
+          - { name: macOS ARM64, runner: macos-26 }
+          - { name: Windows x64, runner: windows-2025 }
+          - { name: Windows ARM64, runner: windows-11-arm }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+      - run: flutter pub get
+      - name: riverpod
+        working-directory: packages/riverpod
+        run: dart test -r expanded
+      - name: flutter_riverpod
+        if: ${{ !cancelled() }}
+        working-directory: packages/flutter_riverpod
+        run: flutter test --no-pub
+      - name: hooks_riverpod
+        if: ${{ !cancelled() }}
+        working-directory: packages/hooks_riverpod
+        run: flutter test --no-pub
+
+  web:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Web Linux x64 Chrome dart2js, runner: ubuntu-24.04, platform: chrome, compiler: dart2js }
+          - { name: Web Linux x64 Chrome dart2wasm, runner: ubuntu-24.04, platform: chrome, compiler: dart2wasm }
+          - { name: Web Linux x64 Firefox dart2js, runner: ubuntu-24.04, platform: firefox, compiler: dart2js }
+          - { name: Web macOS ARM64 Safari dart2js, runner: macos-26, platform: safari, compiler: dart2js }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+      - run: flutter pub get
+      - uses: Telosnex/telosnex_ci_tools/actions/dart-test-browser@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+        with:
+          platform: ${{ matrix.platform }}
+          compiler: ${{ matrix.compiler }}
+          working-directory: packages/riverpod
+
+  # flutter test runs in Chrome only. Without --wasm it compiles with DDC,
+  # not dart2js.
+  web-flutter:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Web Linux x64 Chrome DDC Flutter, compiler: ddc }
+          - { name: Web Linux x64 Chrome dart2wasm Flutter, compiler: dart2wasm }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@d4b868eadd83b6168a93b8ca38b738138b03a955 # main
+      - run: flutter pub get
+      - name: flutter_riverpod
+        working-directory: packages/flutter_riverpod
+        env:
+          COMPILER: ${{ matrix.compiler }}
+        run: |
+          args=(--no-pub --platform chrome)
+          [[ "$COMPILER" == dart2wasm ]] && args+=(--wasm)
+          flutter test "${args[@]}"
+      - name: hooks_riverpod
+        if: ${{ !cancelled() }}
+        working-directory: packages/hooks_riverpod
+        env:
+          COMPILER: ${{ matrix.compiler }}
+        run: |
+          args=(--no-pub --platform chrome)
+          [[ "$COMPILER" == dart2wasm ]] && args+=(--wasm)
+          flutter test "${args[@]}"
+      # The DevTools extension: browser only (dart:js_interop). Not with
+      # dart2wasm: the extension ships as a dart2js build (devtools_extensions
+      # build_and_copy), and dart2wasm in Dart 3.13.1 hangs while loading
+      # test/src/vm_service/eval_test.dart (a miscompile triggered by
+      # devtools_app_shared's EvalOnDartLibrary constructor).
+      - name: riverpod_devtool
+        if: ${{ !cancelled() && matrix.compiler == 'ddc' }}
+        working-directory: packages/riverpod_devtool
+        run: flutter test --no-pub --platform chrome

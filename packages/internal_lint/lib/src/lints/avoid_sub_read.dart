@@ -19,7 +19,7 @@ class AvoidSubRead extends AnalysisRule {
   @override
   DiagnosticCode get diagnosticCode => const LintCode(
     'avoid_sub_read',
-    'Do not use `sub.read()` within Riverpod packages. {0}',
+    'Do not use `sub.read()` within Riverpod packages.',
     severity: DiagnosticSeverity.ERROR,
   );
 

@@ -958,8 +958,8 @@ void main() {
 
         verifyZeroInteractions(listener);
         verifyInOrder([
-          errorListener(42, StackTrace.empty),
-          errorListener2(42, StackTrace.empty),
+          errorListener(42, argThat(isSameStackTrace(StackTrace.empty))),
+          errorListener2(42, argThat(isSameStackTrace(StackTrace.empty))),
         ]);
         verifyNoMoreInteractions(errorListener);
         verifyNoMoreInteractions(errorListener2);
@@ -970,8 +970,8 @@ void main() {
         verifyZeroInteractions(listener);
 
         verifyInOrder([
-          errorListener(21, StackTrace.empty),
-          errorListener2(21, StackTrace.empty),
+          errorListener(21, argThat(isSameStackTrace(StackTrace.empty))),
+          errorListener2(21, argThat(isSameStackTrace(StackTrace.empty))),
         ]);
         verifyNoMoreInteractions(errorListener);
         verifyNoMoreInteractions(errorListener2);
@@ -1008,8 +1008,8 @@ void main() {
         expect(() => container.refresh(provider), throwsA(anything));
 
         verifyInOrder([
-          errorListener(error, StackTrace.empty),
-          errorListener2(error, StackTrace.empty),
+          errorListener(error, argThat(isSameStackTrace(StackTrace.empty))),
+          errorListener2(error, argThat(isSameStackTrace(StackTrace.empty))),
         ]);
         verifyNoMoreInteractions(errorListener);
         verifyNoMoreInteractions(errorListener2);
@@ -1457,7 +1457,10 @@ void main() {
           );
 
           verifyZeroInteractions(listener);
-          verifyOnly(errorListener, errorListener(42, stack));
+          verifyOnly(
+            errorListener,
+            errorListener(42, argThat(isSameStackTrace(stack))),
+          );
 
           expect(
             () => container.refresh(provider),
@@ -1465,7 +1468,10 @@ void main() {
           );
 
           verifyZeroInteractions(listener);
-          verifyOnly(errorListener, errorListener(42, stack));
+          verifyOnly(
+            errorListener,
+            errorListener(42, argThat(isSameStackTrace(stack))),
+          );
         },
       );
 

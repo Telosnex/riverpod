@@ -27,11 +27,6 @@ class GenericName extends AnalysisRule {
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    if (context.currentUnit!.file.path.endsWith('.g.dart') ||
-        context.currentUnit!.file.path.endsWith('.freezed.dart')) {
-      return;
-    }
-
     final visitor = _Visitor(this, context);
     registry.addTypeParameter(this, visitor);
   }
@@ -45,6 +40,10 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   @override
   void visitTypeParameter(TypeParameter node) {
+    // The unit being visited. With analyzer 14.6, currentUnit is null in
+    // registerNodeProcessors, and the plugin crashed on every file.
+    final path = context.currentUnit?.file.path ?? '';
+    if (path.endsWith('.g.dart') || path.endsWith('.freezed.dart')) return;
     if (node.name.lexeme.endsWith('T') && node.name.lexeme.length >= 2) {
       return;
     }

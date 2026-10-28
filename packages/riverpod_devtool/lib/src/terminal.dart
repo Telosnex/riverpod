@@ -71,19 +71,23 @@ final class _TerminalState extends ConsumerState<Terminal> {
   );
 
   final _disposable = Disposable();
-  late final ProviderSubscription<Future<EvalFactory>> _eval;
+  // The latest eval future. Tracked by the listener so dispose() doesn't
+  // need to read the subscription.
+  late Future<EvalFactory> _evalFuture;
 
   @override
   void initState() {
     super.initState();
-    _eval = ref.listenManual(evalProvider.future, (_, _) {});
+    ref.listenManual(evalProvider.future, (_, next) {
+      _evalFuture = next;
+    }, fireImmediately: true);
   }
 
   @override
   void dispose() {
     _terminalFocusNode.dispose();
     _terminalController.dispose();
-    final eval = _eval.read();
+    final eval = _evalFuture;
 
     // TODO wait for pending requests to complete, to avoid race condition on the delete loop?
 

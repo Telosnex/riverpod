@@ -251,6 +251,7 @@ extension ResolverX on Resolver {
   Future<RiverpodAnalysisResult> resolveRiverpodAnalysisResult({
     String libraryName = 'foo',
     bool ignoreErrors = false,
+    Set<String> allowedCompilerErrorCodes = const {},
   }) async {
     final library = await requireFindLibraryByName(
       libraryName,
@@ -265,6 +266,9 @@ extension ResolverX on Resolver {
     final compilerErrors = libraryAst.units
         .expand((e) => e.errors)
         .where((e) => e.severity == Severity.error)
+        .where(
+          (e) => !allowedCompilerErrorCodes.contains(e.diagnosticCode.name),
+        )
         .toList();
     if (compilerErrors.isNotEmpty) {
       throw StateError('''

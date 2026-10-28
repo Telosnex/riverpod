@@ -135,6 +135,36 @@ void main() {
     expect(await result, 42);
   });
 
+  test(
+    'MutationError keeps the stack trace of an error rethrown from a provider',
+    () async {
+      final container = ProviderContainer.test(retry: (_, _) => null);
+      container.read(_stateReadingProvider.notifier);
+      container.read(_failFlagProvider.notifier).fail();
+      final stored = _storedStackOf(container);
+
+      final mut = Mutation<int>();
+      await expectLater(
+        mut.run(
+          container,
+          (_) async => container
+              .read(_stateReadingProvider.notifier)
+              .readState(),
+        ),
+        throwsA(42),
+      );
+
+      expect(
+        container.read(mut),
+        isA<MutationError<int>>().having(
+          (e) => e.stackTrace,
+          'stackTrace',
+          same(stored),
+        ),
+      );
+    },
+  );
+
   test('Failure flow', () async {
     final mut = Mutation<int>();
     final container = ProviderContainer.test();
@@ -429,7 +459,7 @@ void main() {
       verifyZeroInteractions(onDispose);
 
       completer.complete();
-      await completer.future;
+      await f;
       await container.pump();
 
       verifyOnly(onDispose, onDispose.call());
@@ -469,4 +499,40 @@ void main() {
     expect(container.read(mut3), isMutationSuccess<int>(3));
     expect(container.read(mut4), isMutationSuccess<int>(4));
   });
+}
+
+final _storedStack = StackTrace.current;
+
+final _failFlagProvider = NotifierProvider<_FailFlag, bool>(_FailFlag.new);
+
+class _FailFlag extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void fail() => state = true;
+}
+
+final _stateReadingProvider = NotifierProvider<_StateReading, int>(
+  _StateReading.new,
+);
+
+class _StateReading extends Notifier<int> {
+  @override
+  int build() {
+    if (ref.watch(_failFlagProvider)) {
+      Error.throwWithStackTrace(42, _storedStack);
+    }
+    return 0;
+  }
+
+  int readState() => state;
+}
+
+StackTrace _storedStackOf(ProviderContainer container) {
+  try {
+    container.read(_stateReadingProvider);
+  } on ProviderException catch (e) {
+    return e.stackTrace;
+  }
+  throw StateError('expected the provider to be in error state');
 }

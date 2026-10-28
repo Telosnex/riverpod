@@ -406,6 +406,78 @@ final weird = Provider<int>(name: 'foo', dependencies: [], (ref) => 0);
     );
 
     testSource(
+      'Decode providers with an import prefix',
+      source: '''
+import 'package:riverpod/riverpod.dart' as alias;
+
+final provider = alias.Provider<int>((ref) => 0);
+final family = alias.Provider.family<int, int>((ref, id) => 0);
+final autoDispose = alias.Provider.autoDispose<int>((ref) => 0);
+''',
+      (resolver, unit, units) async {
+        final result = await resolver.resolveRiverpodAnalysisResult();
+        final providers = result.manualProviderDeclarations.takeAll([
+          'provider',
+          'family',
+          'autoDispose',
+        ]);
+
+        // The import prefix is not part of the provider.
+        expect(providers['provider']?.provider.toString(), 'Provider');
+        expect(providers['provider']?.familyModifier, null);
+        expect(providers['provider']?.autoDisposeModifier, null);
+
+        expect(providers['family']?.provider.toString(), 'Provider');
+        expect(providers['family']?.familyModifier?.toSource(), 'family');
+        expect(providers['family']?.autoDisposeModifier, null);
+
+        expect(providers['autoDispose']?.provider.toString(), 'Provider');
+        expect(providers['autoDispose']?.familyModifier, null);
+        expect(
+          providers['autoDispose']?.autoDisposeModifier?.toSource(),
+          'autoDispose',
+        );
+      },
+    );
+
+    testSource(
+      'Decode chained modifiers with an import prefix',
+      source: '''
+import 'package:riverpod/riverpod.dart' as alias;
+
+final autoDisposeFamily = alias.Provider.autoDispose.family<int, int>((ref, id) => 0);
+final familyAutoDispose = alias.Provider.family.autoDispose<int, int>((ref, id) => 0);
+''',
+      (resolver, unit, units) async {
+        final result = await resolver.resolveRiverpodAnalysisResult();
+        final providers = result.manualProviderDeclarations.takeAll([
+          'autoDisposeFamily',
+          'familyAutoDispose',
+        ]);
+
+        expect(providers['autoDisposeFamily']?.provider.toString(), 'Provider');
+        expect(
+          providers['autoDisposeFamily']?.familyModifier?.toSource(),
+          'family',
+        );
+        expect(
+          providers['autoDisposeFamily']?.autoDisposeModifier?.toSource(),
+          'autoDispose',
+        );
+
+        expect(providers['familyAutoDispose']?.provider.toString(), 'Provider');
+        expect(
+          providers['familyAutoDispose']?.familyModifier?.toSource(),
+          'family',
+        );
+        expect(
+          providers['familyAutoDispose']?.autoDisposeModifier?.toSource(),
+          'autoDispose',
+        );
+      },
+    );
+
+    testSource(
       'Decode LegacyProviderType.futureProvider',
       source: '''
 import 'package:riverpod/riverpod.dart';

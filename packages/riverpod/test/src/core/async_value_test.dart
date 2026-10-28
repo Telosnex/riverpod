@@ -1522,9 +1522,12 @@ void main() {
             .whenData<String>(
               (value) => Error.throwWithStackTrace(84, StackTrace.empty),
             ),
-        const AsyncLoading<String>(
-          progress: .1,
-        ).copyWithPrevious(const AsyncError(84, StackTrace.empty)),
+        isAsyncError<String>(
+          84,
+          stackTrace: isSameStackTrace(StackTrace.empty),
+          isLoading: true,
+          hasValue: false,
+        ),
       );
 
       expect(
@@ -1689,4 +1692,67 @@ void main() {
       throwsA(isA<FormatException>()),
     );
   });
+
+  test(
+    'AsyncValue.guard does not notify listeners again when a stored error is rethrown',
+    () async {
+      final container = ProviderContainer.test(retry: (_, _) => null);
+      container.read(_stateReadingProvider.notifier);
+      container.read(_failFlagProvider.notifier).fail();
+      expect(
+        () => container.read(_stateReadingProvider),
+        throwsProviderException(42),
+      );
+
+      final states = <AsyncValue<int>>[];
+      container.listen(_guardedProvider, (_, next) => states.add(next));
+
+      await container.read(_guardedProvider.notifier).reload();
+      await container.read(_guardedProvider.notifier).reload();
+
+      expect(states, hasLength(1));
+    },
+  );
+}
+
+final _storedStack = StackTrace.current;
+
+final _failFlagProvider = NotifierProvider<_FailFlag, bool>(_FailFlag.new);
+
+class _FailFlag extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void fail() => state = true;
+}
+
+final _stateReadingProvider = NotifierProvider<_StateReading, int>(
+  _StateReading.new,
+);
+
+class _StateReading extends Notifier<int> {
+  @override
+  int build() {
+    if (ref.watch(_failFlagProvider)) {
+      Error.throwWithStackTrace(42, _storedStack);
+    }
+    return 0;
+  }
+
+  int readState() => state;
+}
+
+final _guardedProvider = NotifierProvider<_Guarded, AsyncValue<int>>(
+  _Guarded.new,
+);
+
+class _Guarded extends Notifier<AsyncValue<int>> {
+  @override
+  AsyncValue<int> build() => const AsyncData(0);
+
+  Future<void> reload() async {
+    state = await AsyncValue.guard(
+      () async => ref.read(_stateReadingProvider.notifier).readState(),
+    );
+  }
 }

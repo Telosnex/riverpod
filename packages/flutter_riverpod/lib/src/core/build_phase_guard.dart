@@ -18,7 +18,7 @@ part of '../core.dart';
 abstract final class RiverpodBuildTarget {
   static Element? current;
 
-  static T run<T>(Element target, T Function() body) {
+  static ResultT run<ResultT>(Element target, ResultT Function() body) {
     final previous = current;
     current = target;
     try {

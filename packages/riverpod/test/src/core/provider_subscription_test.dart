@@ -127,7 +127,7 @@ void main() {
 
         sub.resume();
 
-        verifyOnly(onError, onError(err2, stack));
+        verifyOnly(onError, onError(err2, argThat(isSameStackTrace(stack))));
 
         sub.resume();
 

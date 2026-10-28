@@ -229,8 +229,7 @@ final _$_charactersJsonLiteral = {
             {
               'resourceURI':
                   'http://gateway.marvel.com/v1/public/stories/54371',
-              'name':
-                  'Avengers: The Initiative (2007) #14, Spotlight Variant - Int',
+              'name': 'Avengers: The Initiative (2007) #14, Spotlight Variant - Int',
               'type': 'interiorStory',
             },
           ],
@@ -251,26 +250,22 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/74/3-d_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/74/3-d_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/3-D_Man_(Chandler)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/3-D_Man_(Chandler)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011334/3-d_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011334/3-d_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
       {
         'id': 1017100,
         'name': 'A-Bomb (HAS)',
-        'description':
-            "Rick Jones has been Hulk's best bud since day one, but now he's more than a friend...he's a teammate! Transformed by a Gamma energy explosion, A-Bomb's thick, armored skin is just as strong and powerful as it is blue. And when he curls into action, he uses it like a giant bowling ball of destruction! ",
+        'description': "Rick Jones has been Hulk's best bud since day one, but now he's more than a friend...he's a teammate! Transformed by a Gamma energy explosion, A-Bomb's thick, armored skin is just as strong and powerful as it is blue. And when he curls into action, he uses it like a giant bowling ball of destruction! ",
         'modified': '2013-09-18T15:54:04-0400',
         'thumbnail': {
           'path': 'http://i.annihil.us/u/prod/marvel/i/mg/3/20/5232158de5b16',
@@ -357,8 +352,7 @@ final _$_charactersJsonLiteral = {
             {
               'resourceURI':
                   'http://gateway.marvel.com/v1/public/stories/105929',
-              'name':
-                  'cover from Free Comic Book Day 2013 (Avengers/Hulk) (2013) #1',
+              'name': 'cover from Free Comic Book Day 2013 (Avengers/Hulk) (2013) #1',
               'type': 'cover',
             },
           ],
@@ -374,13 +368,11 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1017100/a-bomb_has?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017100/a-bomb_has?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017100/a-bomb_has?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017100/a-bomb_has?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -434,8 +426,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/64790',
-              'name':
-                  'Avengers by Brian Michael Bendis: The Complete Collection Vol. 2 (Trade Paperback)',
+              'name': 'Avengers by Brian Michael Bendis: The Complete Collection Vol. 2 (Trade Paperback)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/1170',
@@ -459,8 +450,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/65466',
-              'name':
-                  'Captain America by Mark Waid, Ron Garney & Andy Kubert (Hardcover)',
+              'name': 'Captain America by Mark Waid, Ron Garney & Andy Kubert (Hardcover)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/20367',
@@ -512,8 +502,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/23600',
-              'name':
-                  'Avengers by Brian Michael Bendis: The Complete Collection Vol. 2 (2017)',
+              'name': 'Avengers by Brian Michael Bendis: The Complete Collection Vol. 2 (2017)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/227',
@@ -533,8 +522,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/23810',
-              'name':
-                  'Captain America by Mark Waid, Ron Garney & Andy Kubert (2017)',
+              'name': 'Captain America by Mark Waid, Ron Garney & Andy Kubert (2017)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/3743',
@@ -566,8 +554,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/189',
-              'name':
-                  'Marvel Masterworks: Captain America Vol. 1 - 2nd Edition (2003)',
+              'name': 'Marvel Masterworks: Captain America Vol. 1 - 2nd Edition (2003)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/1506',
@@ -712,18 +699,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009144/aim.?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009144/aim.?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/A.I.M.?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/A.I.M.?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009144/aim.?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009144/aim.?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -960,21 +944,18 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010699/aaron_stack?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010699/aaron_stack?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010699/aaron_stack?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010699/aaron_stack?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
       {
         'id': 1009146,
         'name': 'Abomination (Emil Blonsky)',
-        'description':
-            'Formerly known as Emil Blonsky, a spy of Soviet Yugoslavian origin working for the KGB, the Abomination gained his powers after receiving a dose of gamma radiation similar to that which transformed Bruce Banner into the incredible Hulk.',
+        'description': 'Formerly known as Emil Blonsky, a spy of Soviet Yugoslavian origin working for the KGB, the Abomination gained his powers after receiving a dose of gamma radiation similar to that which transformed Bruce Banner into the incredible Hulk.',
         'modified': '2012-03-20T12:32:12-0400',
         'thumbnail': {
           'path': 'http://i.annihil.us/u/prod/marvel/i/mg/9/50/4ce18691cbf04',
@@ -1149,8 +1130,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/21675',
-              'name':
-                  'Marvel Cinematic Universe Guidebook: The Avengers Initiative (2017)',
+              'name': 'Marvel Cinematic Universe Guidebook: The Avengers Initiative (2017)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/22327',
@@ -1300,18 +1280,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009146/abomination_emil_blonsky?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009146/abomination_emil_blonsky?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Abomination?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Abomination?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009146/abomination_emil_blonsky?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009146/abomination_emil_blonsky?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -1394,13 +1371,11 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1016823/abomination_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1016823/abomination_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1016823/abomination_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1016823/abomination_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -1743,18 +1718,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009148/absorbing_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009148/absorbing_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Absorbing_Man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Absorbing_Man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009148/absorbing_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009148/absorbing_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -1803,8 +1775,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/2539',
-              'name':
-                  'X-Men: The Complete Age of Apocalypse Epic Book 2 (Trade Paperback)',
+              'name': 'X-Men: The Complete Age of Apocalypse Epic Book 2 (Trade Paperback)',
             },
           ],
           'returned': 8,
@@ -1901,18 +1872,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009149/abyss?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009149/abyss?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Abyss_(alien)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Abyss_(alien)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009149/abyss?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009149/abyss?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -1941,8 +1909,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/2539',
-              'name':
-                  'X-Men: The Complete Age of Apocalypse Epic Book 2 (Trade Paperback)',
+              'name': 'X-Men: The Complete Age of Apocalypse Epic Book 2 (Trade Paperback)',
             },
           ],
           'returned': 3,
@@ -2003,18 +1970,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010903/abyss_age_of_apocalypse?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010903/abyss_age_of_apocalypse?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Abyss_(Age_of_Apocalypse)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Abyss_(Age_of_Apocalypse)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010903/abyss_age_of_apocalypse?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010903/abyss_age_of_apocalypse?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -2060,26 +2024,22 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/2902/adam_destine?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/2902/adam_destine?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Destine,_Adam?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Destine,_Adam?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011266/adam_destine?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011266/adam_destine?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
       {
         'id': 1010354,
         'name': 'Adam Warlock',
-        'description':
-            'Adam Warlock is an artificially created human who was born in a cocoon at a scientific complex called The Beehive.',
+        'description': 'Adam Warlock is an artificially created human who was born in a cocoon at a scientific complex called The Beehive.',
         'modified': '2013-08-07T13:49:06-0400',
         'thumbnail': {
           'path': 'http://i.annihil.us/u/prod/marvel/i/mg/a/f0/5202887448860',
@@ -2093,8 +2053,7 @@ final _$_charactersJsonLiteral = {
           'items': [
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/62151',
-              'name':
-                  'All-New Guardians of the Galaxy Vol. 3: Infinity Quest (Trade Paperback)',
+              'name': 'All-New Guardians of the Galaxy Vol. 3: Infinity Quest (Trade Paperback)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/17271',
@@ -2187,8 +2146,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/22778',
-              'name':
-                  'All-New Guardians of the Galaxy Vol. 3: Infinity Quest (2018)',
+              'name': 'All-New Guardians of the Galaxy Vol. 3: Infinity Quest (2018)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/3061',
@@ -2236,8 +2194,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/22422',
-              'name':
-                  'GUARDIANS OF THE GALAXY: ROAD TO ANNIHILATION VOL. 2 TPB (2017)',
+              'name': 'GUARDIANS OF THE GALAXY: ROAD TO ANNIHILATION VOL. 2 TPB (2017)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/2021',
@@ -2374,8 +2331,7 @@ final _$_charactersJsonLiteral = {
             {
               'resourceURI':
                   'http://gateway.marvel.com/v1/public/stories/19883',
-              'name':
-                  'The Adventures of Lockheed the Space Dragon and His Pet Girl, Kitty',
+              'name': 'The Adventures of Lockheed the Space Dragon and His Pet Girl, Kitty',
               'type': 'interiorStory',
             },
             {
@@ -2430,18 +2386,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010354/adam_warlock?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010354/adam_warlock?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Warlock,_Adam?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Warlock,_Adam?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010354/adam_warlock?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010354/adam_warlock?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -2486,18 +2439,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/95/aegis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/95/aegis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Aegis_%28Trey_Rollins%29?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Aegis_%28Trey_Rollins%29?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010846/aegis_trey_rollins?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010846/aegis_trey_rollins?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -2751,26 +2701,22 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011297/agent_brand?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011297/agent_brand?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Agent_Brand?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Agent_Brand?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011297/agent_brand?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011297/agent_brand?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
       {
         'id': 1011031,
         'name': 'Agent X (Nijo)',
-        'description':
-            "Originally a partner of the mind-altering assassin Black Swan, Nijo spied on Deadpool as part of the Swan's plan to exact revenge for Deadpool falsely taking credit for the Swan's assassination of the Four Winds crime family, which included Nijo's brother.",
+        'description': "Originally a partner of the mind-altering assassin Black Swan, Nijo spied on Deadpool as part of the Swan's plan to exact revenge for Deadpool falsely taking credit for the Swan's assassination of the Four Winds crime family, which included Nijo's brother.",
         'modified': '1969-12-31T19:00:00-0500',
         'thumbnail': {
           'path':
@@ -2853,8 +2799,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/5761',
-              'name':
-                  'Cable & Deadpool Vol. 2: The Burnt Offering (Trade Paperback)',
+              'name': 'Cable & Deadpool Vol. 2: The Burnt Offering (Trade Paperback)',
             },
           ],
           'returned': 18,
@@ -3015,18 +2960,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011031/agent_x_nijo?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011031/agent_x_nijo?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Agent_X_(Nijo)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Agent_X_(Nijo)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011031/agent_x_nijo?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011031/agent_x_nijo?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -3304,18 +3246,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009150/agent_zero?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009150/agent_zero?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Agent_Zero?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Agent_Zero?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009150/agent_zero?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009150/agent_zero?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -3377,8 +3316,7 @@ final _$_charactersJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/24017',
-              'name':
-                  'Agents of Atlas (2009) #3 (Wolverine Art Appreciation Variant)',
+              'name': 'Agents of Atlas (2009) #3 (Wolverine Art Appreciation Variant)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/24016',
@@ -3610,18 +3548,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011198/agents_of_atlas?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011198/agents_of_atlas?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Agents_of_Atlas?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Agents_of_Atlas?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011198/agents_of_atlas?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011198/agents_of_atlas?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -3667,18 +3602,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/105/aginar?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/105/aginar?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Aginar?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Aginar?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011175/aginar?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011175/aginar?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -3777,18 +3709,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011136/air-walker_gabriel_lan?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011136/air-walker_gabriel_lan?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Air-Walker_(Gabriel_Lan)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Air-Walker_(Gabriel_Lan)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011136/air-walker_gabriel_lan?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011136/air-walker_gabriel_lan?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -3909,18 +3838,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011176/ajak?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011176/ajak?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Ajak?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Ajak?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011176/ajak?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011176/ajak?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -3965,18 +3891,15 @@ final _$_charactersJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/113/ajaxis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/113/ajaxis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Ajaxis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Ajaxis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010870/ajaxis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010870/ajaxis?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4040,13 +3963,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/114/akemi?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/114/akemi?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011194/akemi?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011194/akemi?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4092,18 +4013,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/116/alain?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/116/alain?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Alain?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Alain?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011170/alain?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011170/alain?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4149,13 +4067,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/2692/albert_cleary?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/2692/albert_cleary?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009240/albert_cleary?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009240/albert_cleary?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4218,18 +4134,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011120/albion?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011120/albion?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Albion?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Albion?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011120/albion?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011120/albion?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4485,21 +4398,18 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010836/alex_power?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010836/alex_power?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010836/alex_power?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010836/alex_power?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
       {
         'id': 1010755,
         'name': 'Alex Wilder',
-        'description':
-            'Despite being the only one of the Runaways without any superhuman abilities or tech, Alex Wilder became the de facto leader of the group due to his natural leadership skills and intellect, as well as prodigy-level logic and strategy.',
+        'description': 'Despite being the only one of the Runaways without any superhuman abilities or tech, Alex Wilder became the de facto leader of the group due to his natural leadership skills and intellect, as well as prodigy-level logic and strategy.',
         'modified': '1969-12-31T19:00:00-0500',
         'thumbnail': {
           'path': 'http://i.annihil.us/u/prod/marvel/i/mg/2/c0/4c00377144d5a',
@@ -4646,18 +4556,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010755/alex_wilder?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010755/alex_wilder?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Wilder%2C_Alex?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Wilder%2C_Alex?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010755/alex_wilder?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010755/alex_wilder?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4703,13 +4610,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/2892/alexa_mendez?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/2892/alexa_mendez?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011214/alexa_mendez?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011214/alexa_mendez?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4772,13 +4677,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009497/alexander_pierce?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009497/alexander_pierce?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009497/alexander_pierce?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009497/alexander_pierce?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4823,13 +4726,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/122/alice?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/122/alice?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1014990/alice?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1014990/alice?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -4976,8 +4877,7 @@ final _$_characters20JsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/2254',
-              'name':
-                  'FANTASTIC FOUR VISIONARIES: WALTER SIMONSON VOL. 1 TPB (2007)',
+              'name': 'FANTASTIC FOUR VISIONARIES: WALTER SIMONSON VOL. 1 TPB (2007)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/series/1266',
@@ -5165,18 +5065,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009435/alicia_masters?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009435/alicia_masters?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Masters%2C_Alicia?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Masters%2C_Alicia?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009435/alicia_masters?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009435/alicia_masters?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -5449,8 +5346,7 @@ final _$_characters20JsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/stories/2936',
-              'name':
-                  '"WAXING POETIC" PART 1 (OF 2) Is the All-New, All-Different Alpha Flight really disbanding after only seven issues? Not if the r',
+              'name': '"WAXING POETIC" PART 1 (OF 2) Is the All-New, All-Different Alpha Flight really disbanding after only seven issues? Not if the r',
               'type': 'interiorStory',
             },
             {
@@ -5460,8 +5356,7 @@ final _$_characters20JsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/stories/2938',
-              'name':
-                  '"WAXING POETIC" PART 2 (OF 2) Montreal faces its gravest hour as it falls under attack by…wax statues of the entire Marvel Unive',
+              'name': '"WAXING POETIC" PART 2 (OF 2) Montreal faces its gravest hour as it falls under attack by…wax statues of the entire Marvel Unive',
               'type': 'interiorStory',
             },
             {
@@ -5516,18 +5411,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010370/alpha_flight?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010370/alpha_flight?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Alpha_Flight?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Alpha_Flight?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010370/alpha_flight?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010370/alpha_flight?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -5612,18 +5504,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011324/alpha_flight_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011324/alpha_flight_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Alpha%20Flight%20(Ultimate)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Alpha%20Flight%20(Ultimate)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011324/alpha_flight_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011324/alpha_flight_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -5669,13 +5558,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/2880/alvin_maker?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/2880/alvin_maker?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011164/alvin_maker?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011164/alvin_maker?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6025,18 +5912,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011227/amadeus_cho?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011227/amadeus_cho?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Amadeus_Cho?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Amadeus_Cho?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011227/amadeus_cho?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011227/amadeus_cho?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6082,13 +5966,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/2755/amanda_sefton?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/2755/amanda_sefton?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009567/amanda_sefton?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009567/amanda_sefton?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6134,13 +6016,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/130/amazoness?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/130/amazoness?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011382/amazoness?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011382/amazoness?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6242,18 +6122,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1011361/american_eagle_jason_strongbow?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011361/american_eagle_jason_strongbow?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/American_Eagle_(Jason_Strongbow)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/American_Eagle_(Jason_Strongbow)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1011361/american_eagle_jason_strongbow?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1011361/american_eagle_jason_strongbow?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6439,18 +6316,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009151/amiko?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009151/amiko?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Amiko?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Amiko?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009151/amiko?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009151/amiko?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6591,13 +6465,11 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010672/amora?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010672/amora?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010672/amora?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010672/amora?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6627,8 +6499,7 @@ final _$_characters20JsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/5425',
-              'name':
-                  'Squadron Supreme Vol. 1: The Pre-War Years Premiere (Hardcover)',
+              'name': 'Squadron Supreme Vol. 1: The Pre-War Years Premiere (Hardcover)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/18820',
@@ -6692,18 +6563,15 @@ final _$_characters20JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/137/amphibian?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/137/amphibian?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Amphibian_(Earth-712)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Amphibian_(Earth-712)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010673/amphibian_earth-712?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010673/amphibian_earth-712?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -6728,8 +6596,7 @@ final _$_charactersIronManJsonLiteral = {
       {
         'id': 1009368,
         'name': 'Iron Man',
-        'description':
-            'Wounded, captured and forced to build a weapon by his enemies, billionaire industrialist Tony Stark instead created an advanced suit of armor to save his life and escape captivity. Now with a new outlook on life, Tony uses his money and intelligence to make the world a safer, better place as Iron Man.',
+        'description': 'Wounded, captured and forced to build a weapon by his enemies, billionaire industrialist Tony Stark instead created an advanced suit of armor to save his life and escape captivity. Now with a new outlook on life, Tony uses his money and intelligence to make the world a safer, better place as Iron Man.',
         'modified': '2016-09-28T12:08:19-0400',
         'thumbnail': {
           'path': 'http://i.annihil.us/u/prod/marvel/i/mg/9/c0/527bb7b37ff55',
@@ -6984,14 +6851,12 @@ final _$_charactersIronManJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/stories/1002',
-              'name':
-                  'AVENGERS DISASSEMBLED TIE-IN! Still reeling from recent traumas, Iron Man must face off against his evil doppelganger. Meanwhile',
+              'name': 'AVENGERS DISASSEMBLED TIE-IN! Still reeling from recent traumas, Iron Man must face off against his evil doppelganger. Meanwhile',
               'type': 'interiorStory',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/stories/1004',
-              'name':
-                  '"THE SINGULARITY" CONCLUSION! PART 4 (OF 4) The battle rages on between Iron Man and his doppelganger, but only one of them can ',
+              'name': '"THE SINGULARITY" CONCLUSION! PART 4 (OF 4) The battle rages on between Iron Man and his doppelganger, but only one of them can ',
               'type': 'interiorStory',
             },
             {
@@ -7113,18 +6978,15 @@ final _$_charactersIronManJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Iron_Man_(Anthony_Stark)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Iron_Man_(Anthony_Stark)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7169,13 +7031,11 @@ final _$_charactersIronManJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017320/iron_man_iron_man_3_-_the_official_game?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017320/iron_man_iron_man_3_-_the_official_game?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7220,13 +7080,11 @@ final _$_charactersIronManJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017294/iron_man_lego_marvel_super_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017294/iron_man_lego_marvel_super_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7271,13 +7129,11 @@ final _$_charactersIronManJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017310/iron_man_marvel_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017310/iron_man_marvel_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7322,13 +7178,11 @@ final _$_charactersIronManJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017326/iron_man_marvel_war_of_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017326/iron_man_marvel_war_of_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7369,8 +7223,7 @@ final _$_charactersIronManJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/1934',
-              'name':
-                  'Ultimate Adventures Vol. 1: One Tin Soldier (Trade Paperback)',
+              'name': 'Ultimate Adventures Vol. 1: One Tin Soldier (Trade Paperback)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/1204',
@@ -7398,8 +7251,7 @@ final _$_charactersIronManJsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/38503',
-              'name':
-                  'Ultimate Avengers Vs. New Ultimates (2011) #2 (HITCH VARIANT)',
+              'name': 'Ultimate Avengers Vs. New Ultimates (2011) #2 (HITCH VARIANT)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/45715',
@@ -7639,26 +7491,22 @@ final _$_charactersIronManJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Iron_Man_%28Ultimate%29?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Iron_Man_%28Ultimate%29?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
       {
         'id': 1017104,
         'name': 'Iron Man/Tony Stark (MAA)',
-        'description':
-            "Tony Stark is the genius inventor/billionaire/philanthropist owner of Stark Industries. With his super high-tech Iron Man suit, he is practically indestructible, able to fly, and has a large selection of weapons to choose from - but it's Tony's quick thinking and ability to adapt and improvise that make him an effective leader of the Avengers.        ",
+        'description': "Tony Stark is the genius inventor/billionaire/philanthropist owner of Stark Industries. With his super high-tech Iron Man suit, he is practically indestructible, able to fly, and has a large selection of weapons to choose from - but it's Tony's quick thinking and ability to adapt and improvise that make him an effective leader of the Avengers.        ",
         'modified': '2013-09-18T15:49:18-0400',
         'thumbnail': {
           'path': 'http://i.annihil.us/u/prod/marvel/i/mg/2/d0/5232190d42df2',
@@ -7696,13 +7544,11 @@ final _$_charactersIronManJsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017104/iron_mantony_stark_maa?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017104/iron_mantony_stark_maa?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7765,13 +7611,11 @@ final _$_charactersIronMan2JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017320/iron_man_iron_man_3_-_the_official_game?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017320/iron_man_iron_man_3_-_the_official_game?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7816,13 +7660,11 @@ final _$_charactersIronMan2JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017294/iron_man_lego_marvel_super_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017294/iron_man_lego_marvel_super_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7867,13 +7709,11 @@ final _$_charactersIronMan2JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017310/iron_man_marvel_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017310/iron_man_marvel_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7918,13 +7758,11 @@ final _$_charactersIronMan2JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/characters/29/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1017326/iron_man_marvel_war_of_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1017326/iron_man_marvel_war_of_heroes?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -7965,8 +7803,7 @@ final _$_charactersIronMan2JsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/1934',
-              'name':
-                  'Ultimate Adventures Vol. 1: One Tin Soldier (Trade Paperback)',
+              'name': 'Ultimate Adventures Vol. 1: One Tin Soldier (Trade Paperback)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/1204',
@@ -7994,8 +7831,7 @@ final _$_charactersIronMan2JsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/38503',
-              'name':
-                  'Ultimate Avengers Vs. New Ultimates (2011) #2 (HITCH VARIANT)',
+              'name': 'Ultimate Avengers Vs. New Ultimates (2011) #2 (HITCH VARIANT)',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/comics/45715',
@@ -8235,18 +8071,15 @@ final _$_charactersIronMan2JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Iron_Man_%28Ultimate%29?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Iron_Man_%28Ultimate%29?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1010935/iron_man_ultimate?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
@@ -8271,8 +8104,7 @@ final _$_character1009368JsonLiteral = {
       {
         'id': 1009368,
         'name': 'Iron Man',
-        'description':
-            'Wounded, captured and forced to build a weapon by his enemies, billionaire industrialist Tony Stark instead created an advanced suit of armor to save his life and escape captivity. Now with a new outlook on life, Tony uses his money and intelligence to make the world a safer, better place as Iron Man.',
+        'description': 'Wounded, captured and forced to build a weapon by his enemies, billionaire industrialist Tony Stark instead created an advanced suit of armor to save his life and escape captivity. Now with a new outlook on life, Tony uses his money and intelligence to make the world a safer, better place as Iron Man.',
         'modified': '2016-09-28T12:08:19-0400',
         'thumbnail': {
           'path': 'http://i.annihil.us/u/prod/marvel/i/mg/9/c0/527bb7b37ff55',
@@ -8527,14 +8359,12 @@ final _$_character1009368JsonLiteral = {
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/stories/1002',
-              'name':
-                  'AVENGERS DISASSEMBLED TIE-IN! Still reeling from recent traumas, Iron Man must face off against his evil doppelganger. Meanwhile',
+              'name': 'AVENGERS DISASSEMBLED TIE-IN! Still reeling from recent traumas, Iron Man must face off against his evil doppelganger. Meanwhile',
               'type': 'interiorStory',
             },
             {
               'resourceURI': 'http://gateway.marvel.com/v1/public/stories/1004',
-              'name':
-                  '"THE SINGULARITY" CONCLUSION! PART 4 (OF 4) The battle rages on between Iron Man and his doppelganger, but only one of them can ',
+              'name': '"THE SINGULARITY" CONCLUSION! PART 4 (OF 4) The battle rages on between Iron Man and his doppelganger, but only one of them can ',
               'type': 'interiorStory',
             },
             {
@@ -8656,18 +8486,15 @@ final _$_character1009368JsonLiteral = {
         'urls': [
           {
             'type': 'detail',
-            'url':
-                'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'wiki',
-            'url':
-                'http://marvel.com/universe/Iron_Man_(Anthony_Stark)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/universe/Iron_Man_(Anthony_Stark)?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
           {
             'type': 'comiclink',
-            'url':
-                'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
+            'url': 'http://marvel.com/comics/characters/1009368/iron_man?utm_campaign=apiRef&utm_source=5f84cceaaa141a3ad5425c416353eab4',
           },
         ],
       },
