@@ -8,8 +8,35 @@ The `telosnex/` folder is for this fork only. Do not include it in a patch.
 
 - Fork base: upstream `2fa6ad2ae` (2026-06-13). The fork also merged
   upstream once, on 2026-07-05 (`7ada43c3d`).
-- Last check against upstream: `e0bd6a673` (2026-10-31).
+- Last check against upstream: `e0bd6a673` (2026-10-31). Patch branches
+  are on `b34e73cd5` (2026-10-31).
 - Fork commits since the base: 49 (no merges).
+
+## Patch branches
+
+Each verified patch is a local branch `patch/<ID>-<name>` with one commit on
+upstream `master`. `telosnex/verify_patch.dart` checks it: the patch's tests
+pass with the fix, and fail (or time out) with the `lib/` files of the
+commit put back to upstream. Run it with a Flutter `master` SDK, because
+upstream's workspace does not resolve on Flutter stable:
+
+```sh
+dart telosnex/verify_patch.dart patch/R1-scheduler-exception-safe
+```
+
+| Branch | Commit | Red, then green | Options | `scripts/tested.sh` |
+|---|---|---|---|---|
+| `patch/R1-scheduler-exception-safe` | `d28a48e38` | yes | | passes |
+| `patch/R2-no-dirty-built-ancestor` | `70f061cdc` | yes | | needs `core_test.dart`, `consumer_test.dart` changes |
+| `patch/R3-invalidate-self-during-build` | `2c8becad3` | yes | | needs an `element_test.dart` change |
+| `patch/R4-weak-listener-releases-future` | `d0913cf84` | yes | | test must move to `element_test.dart` |
+| `patch/R5-weak-only-not-initialized` | `0521f9963` | yes | | needs an `element_test.dart` change |
+| `patch/R6-dart2js-stack-trace-identity` | `2b7fed4cd` | yes | `--platform chrome --name 'MutationError keeps the stack trace\|AsyncValue.guard does not notify listeners again'` | needs `result_test`, `stack_trace_test`, `element_test` changes |
+| `patch/P4-debug-validate-internal-state` | `a57b0a353` | yes | | needs a `riverpod_test.dart` change |
+
+`scripts/tested.sh` is upstream's rule that each changed `lib/x.dart` comes
+with a change to its `test/x_test.dart`. It does not affect red and green;
+fix it before a patch goes upstream.
 
 ## Status
 
@@ -31,12 +58,14 @@ the reason the fork exists.
 
 | ID | Change | Fork commits | Status | Test |
 |---|---|---|---|---|
-| R1 | `ProviderScheduler._task()` is exception-safe. One exception in `flush()` left the task pending forever, and every later refresh and dispose was dropped. This was the iOS "stuck overnight" bug. Upstream still has it. Issue #4806 reports it. | `05ba4bdcb` (scheduler half) | split, then ready | `riverpod/test/src/core/scheduler_wedge_test.dart` |
-| R2 | Never mark an already-built ancestor dirty during a build pass. In release, Flutter drops the mark, and the element never rebuilds again. Replaces the debug-only probe of `72c83d3da`. | `72c83d3da`, `d8d78c121`, part of `9e519ed46` | squash | `flutter_riverpod/test/build_phase_wedge_test.dart` |
-| R3 | `invalidateSelf` during build gives a clear error in debug mode, and the check applies only to manual invalidation. | `0baf71a3c`, `aba09ad39` | squash, then ready | `flutter_riverpod/test/framework_test.dart`, `riverpod/test/src/core/ref_test.dart` |
-| R4 | A weak listener that keeps a disposed provider alive no longer keeps its completed future (memory). | `f67cc8baa` | ready | in the commit (199 lines) |
-| R5 | Refreshing dependents does not initialize providers that only weak listeners use. | `2b922384a` | ready | in the commit |
-| R6 | Errors rethrown on dart2js keep the same stack trace, so `AsyncValue` and `MutationError` equality hold. | `48553acc0`, `b80cdcd99` (test) | squash, then ready | `b80cdcd99` |
+| R1 | `ProviderScheduler._task()` is exception-safe. One exception in `flush()` left the task pending forever, and every later refresh and dispose was dropped. This was the iOS "stuck overnight" bug. Upstream still has it. Issue #4806 reports it. | `05ba4bdcb` (scheduler half) | verified | `riverpod/test/src/core/scheduler_test.dart` |
+| R7 | A refresh scheduled during the dispose pass (from `ref.onDispose`) is not dropped. | `05ba4bdcb` (scheduler half) | to do | third test of the fork's `scheduler_wedge_test.dart` |
+| R8 | The fork's other R1 parts: each dispose guarded, and `_scheduleTask` replaces a completed task that `_task` did not finish. Not needed for R1's tests; only keep them with a test that needs them. | `05ba4bdcb` (scheduler half) | to do | none yet |
+| R2 | A consumer notified during another consumer's build is marked dirty on the next frame, not during the build. In release, Flutter leaves it dirty for good, and it never rebuilds again. The scope half of `d8d78c121` is covered upstream by `02b11c3fb` (#4805): that test passes on upstream. | `72c83d3da`, `d8d78c121`, part of `9e519ed46` | verified (consumer half) | `flutter_riverpod/test/src/core/build_phase_guard_test.dart` |
+| R3 | `invalidateSelf` during build gives a clear error in debug mode, and the check applies only to manual invalidation. | `0baf71a3c`, `aba09ad39` | verified | `flutter_riverpod/test/framework_test.dart`, `riverpod/test/src/core/ref_test.dart` |
+| R4 | A weak listener that keeps a disposed provider alive no longer keeps its completed future (memory). | `f67cc8baa` | verified | in the commit (199 lines) |
+| R5 | Refreshing dependents does not initialize providers that only weak listeners use. | `2b922384a` | verified | in the commit |
+| R6 | Errors rethrown on dart2js keep the same stack trace, so `AsyncValue` and `MutationError` equality hold. | `48553acc0`, `b80cdcd99` (test) | verified (Chrome) | `b80cdcd99` |
 
 ## Performance
 
@@ -48,7 +77,7 @@ behavior.
 | P1 | One TickerMode listener per notifier (`_TickerModeHub`) instead of one per consumer. Includes the fix that keeps one throwing element from leaving the others paused. | `98edb6a61` (hub half), `05ba4bdcb` (hub half) | split, squash | The hub caused the second half of the overnight bug. Its isolation fix must stay with it. Test: `flutter_riverpod/test/src/core/ticker_mode_hub_test.dart` |
 | P2 | The container debug id (a UUID) is made when first read, not on every container. | `98edb6a61` (`provider_container.dart` half) | split, then ready | 1 line |
 | P3 | Scoped containers copy the parent's provider directory on read, not on creation. | `6ff0dca7f` | conflict in a test | Conflict is in `auto_dispose_test.dart` only |
-| P4 | `riverpodDebugValidateInternalState`: apps can turn off internal checks in debug builds. Default unchanged. | `423642b8b` | ready | Exported by `7a67f0549` (see T1) |
+| P4 | `riverpodDebugValidateInternalState`: apps can turn off internal checks in debug builds. Default unchanged. | `423642b8b` | verified | New test in `element_test.dart`. Exported by `7a67f0549` (see T1) |
 
 ## Diagnostics and debug options
 
