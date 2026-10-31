@@ -38,6 +38,7 @@ dart telosnex/verify_patch.dart patch/R1-scheduler-exception-safe
 | `patch/P4-debug-validate-internal-state` | `86798f432` | yes | | passes |
 | `patch/A1-prefixed-manual-providers` | `644782f70` | yes | | passes |
 | `patch/T3-avoid-sub-read` | `f2b284f8c` | yes | `--name 'reports sub.read\|throws the error of\|withFrameCache returns\|listenables of the same'` | passes |
+| `patch/R9-devtool-frame-no-spin` | `cabaf7622` | yes | `--name 'does not stop devtool frames'` | passes |
 
 `scripts/tested.sh` is upstream's rule that each changed `lib/x.dart` comes
 with a change to its `test/x_test.dart`. All branches pass it.

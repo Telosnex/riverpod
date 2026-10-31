@@ -137,3 +137,15 @@
 2. P1's timing test on CI hardware.
 3. P2: a test, or drop it.
 4. The devtool `addEvent` microtask loop seen in R1 (debug only).
+
+## 2026-10-31: R9, devtool frame loop
+
+- Upstream `RiverpodDevtool.addEvent` waits for every scheduler's
+  `pendingFuture` in a `while (true)` loop. After a task throws, upstream
+  keeps a completed completer as pending, so the loop spins in microtasks
+  and the isolate never runs timers again (debug mode only).
+- R9 awaits each pending future once (identity set). A stuck scheduler now
+  delays nothing; a new task still joins the frame.
+- Test in `devtool_test.dart`, in its own isolate with a 5 s timeout. It
+  turns on `debugTrackProviderHistory` there, because compacted frames do
+  not grow in count. Red (hang) on upstream, green with R9. Works with R1.
