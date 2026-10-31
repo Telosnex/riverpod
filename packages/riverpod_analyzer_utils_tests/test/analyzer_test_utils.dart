@@ -110,9 +110,8 @@ void testSource(
         (resolver) async {
           final (units, _) = await getUnits(resolver);
 
-          return RiverpodGenerator(
-            const {},
-          ).generateForUnit(units.map((e) => e.unit).toList());
+          return RiverpodGenerator(const {})
+              .generateForUnit(units.map((e) => e.unit).toList());
         },
       );
     }
@@ -159,6 +158,12 @@ void testSource(
     );
   });
 }
+
+/// Matches the `toSource()` of the node that begins a cascade section.
+///
+/// Since analyzer 14.7.0, it starts with the cascade operator (`..watch(dep)`
+/// rather than `watch(dep)`).
+Matcher cascadeSectionSource(String source) => anyOf(source, '..$source');
 
 /// Asserts that no [AstNode] has to Riverpod ast.
 void expectRiverpodAstOnlyHasASingleOptionPerNode(AstNode node) {
