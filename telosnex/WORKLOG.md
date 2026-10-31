@@ -105,3 +105,35 @@
 2. Find a regression check for P2, or keep it outside the verified set.
 3. Validate P1's timing regression on CI hardware.
 4. Resolve the remaining `scripts/tested.sh` failures for the earlier patches.
+
+## 2026-10-31: A1, T3, the rest of the list, and `tested.sh`
+
+- A1: upstream moved the analyzer tests to `riverpod_analyzer_utils_tests`.
+  Two tests fail on upstream (`UnsupportedError`). Added a unit test of
+  `identifierChain` (now `@internal`) for `tested.sh`.
+- T3: `avoid_sub_read` never reported anything upstream. Its message has a
+  `{0}` placeholder and the rule reports without arguments, so it throws,
+  and the analysis server swallows the exception. That also hid the
+  `generic_name` warnings of the same files. The rule's test fails on
+  upstream because `runRule` rethrows. Fixed the violations and the
+  warnings. The devtool's terminal uses
+  `// ignore: internal_lint/avoid_sub_read` (it cannot use `readSafe`).
+- A2, T2, D3: superseded by upstream. D1, D2: the app does not use them;
+  they stay fork-only.
+- T1 folded into P4: the app imports `riverpodDebugValidateInternalState`
+  from `flutter_riverpod.dart`, so P4 exports it from all three packages,
+  with an export test in each.
+- `tested.sh` fixes: tests moved to the file the rule expects (R2 to R5),
+  new tests for R6 (`caughtStackTrace`, `valueOrRawException`, and a
+  notifier rethrow that is red on Chrome) and T3. R2's guard is now in
+  `consumer.dart`, so `core.dart` does not change; it uses
+  `WidgetsBinding` with `ensureVisualUpdate`.
+- `riverpod_devtool` tests: 21 pass, 10 fail on upstream too (web
+  dependencies do not compile on this SDK).
+
+### Next
+
+1. Decide whether to push the patch branches and open PRs. R7 needs R1.
+2. P1's timing test on CI hardware.
+3. P2: a test, or drop it.
+4. The devtool `addEvent` microtask loop seen in R1 (debug only).

@@ -27,19 +27,23 @@ dart telosnex/verify_patch.dart patch/R1-scheduler-exception-safe
 | Branch | Commit | Red, then green | Options | `scripts/tested.sh` |
 |---|---|---|---|---|
 | `patch/R1-scheduler-exception-safe` | `d28a48e38` | yes | | passes |
-| `patch/R2-no-dirty-built-ancestor` | `70f061cdc` | yes | | needs `core_test.dart`, `consumer_test.dart` changes |
-| `patch/R3-invalidate-self-during-build` | `2c8becad3` | yes | | needs an `element_test.dart` change |
-| `patch/R4-weak-listener-releases-future` | `d0913cf84` | yes | | test must move to `element_test.dart` |
-| `patch/R5-weak-only-not-initialized` | `0521f9963` | yes | | needs an `element_test.dart` change |
-| `patch/R6-dart2js-stack-trace-identity` | `2b7fed4cd` | yes | `--platform chrome --name 'MutationError keeps the stack trace\|AsyncValue.guard does not notify listeners again'` | needs `result_test`, `stack_trace_test`, `element_test` changes |
+| `patch/R2-no-dirty-built-ancestor` | `66e3670ed` | yes | `--name 'notifications during a build'` | passes |
+| `patch/R3-invalidate-self-during-build` | `e196c2f41` | yes | | passes |
+| `patch/R4-weak-listener-releases-future` | `7df9050ee` | yes | | passes |
+| `patch/R5-weak-only-not-initialized` | `151669683` | yes | | passes |
+| `patch/R6-dart2js-stack-trace-identity` | `bf71df224` | yes | `--platform chrome --name 'MutationError keeps the stack trace\|AsyncValue.guard does not notify listeners again\|keeps its stack trace'` | passes |
 | `patch/R7-refresh-during-dispose` | `faec4d0f5` | yes | `--base patch/R1-scheduler-exception-safe` | passes |
 | `patch/P1-ticker-mode-hub` | `32f5e1b4a` | yes | `--name 'unmounting many consumers'` | passes |
 | `patch/P3-lazy-scoped-directories` | `4e9990604` | yes | `--name 'child scopes do not copy inherited orphan pointers until read'` | passes |
-| `patch/P4-debug-validate-internal-state` | `a57b0a353` | yes | | needs a `riverpod_test.dart` change |
+| `patch/P4-debug-validate-internal-state` | `86798f432` | yes | | passes |
+| `patch/A1-prefixed-manual-providers` | `644782f70` | yes | | passes |
+| `patch/T3-avoid-sub-read` | `f2b284f8c` | yes | `--name 'reports sub.read\|throws the error of\|withFrameCache returns\|listenables of the same'` | passes |
 
 `scripts/tested.sh` is upstream's rule that each changed `lib/x.dart` comes
-with a change to its `test/x_test.dart`. It does not affect red and green;
-fix it before a patch goes upstream.
+with a change to its `test/x_test.dart`. All branches pass it.
+
+On Chrome, 68 riverpod tests fail on upstream `master` too (VM-only stack
+trace and timing assumptions; see X1 to X4). R6 does not change that set.
 
 ## Status
 
@@ -87,17 +91,17 @@ behavior.
 
 | ID | Change | Fork commits | Status | Notes |
 |---|---|---|---|---|
-| D1 | `ProviderScheduler.health` and `tickerModeHealth`/`resyncTickerMode`, for app watchdogs. | `05ba4bdcb` (diagnostics) | split | The Telosnex watchdog uses these. Separate from R1 and P1. |
-| D2 | `ProviderTrace`: opt-in trace of dirty, refresh and flush for chosen providers. | `ff851c748`, `a2ca05a59` | squash; conflicts | Made for the flutter-pi wedge. Telosnex-specific in purpose. |
-| D3 | `debugRiverpodDevtoolEnabled`: the devtool observer is off by default, because its event history keeps providers alive. | `12584b4c3` | conflict | Changes upstream's default. Check upstream `dc85ff6a` (devtool memory leak) first; it may make this unneeded. |
+| D1 | `ProviderScheduler.health` and `tickerModeHealth`/`resyncTickerMode`, for app watchdogs. | `05ba4bdcb` (diagnostics) | fork only | The Telosnex app does not use it. |
+| D2 | `ProviderTrace`: opt-in trace of dirty, refresh and flush for chosen providers. | `ff851c748`, `a2ca05a59` | fork only | The Telosnex app does not use it. |
+| D3 | `debugRiverpodDevtoolEnabled`: the devtool observer is off by default, because its event history keeps providers alive. | `12584b4c3` | superseded | Upstream keeps only current states and releases disposed providers (`keeps current states and releases disposed providers` in `devtool_test.dart`); history is off by default. |
 
 ## Public API housekeeping
 
 | ID | Change | Fork commits | Status | Notes |
 |---|---|---|---|---|
-| T1 | Export the debug flags from the public libraries. | `7a67f0549` | conflict | Depends on P4 and D3 |
-| T2 | `DevtoolObserver` is `@internal`, not `@visibleForTesting`. | `428069ac4` | conflict | Small |
-| T3 | Do not call `sub.read()` inside riverpod (the `avoid_sub_read` lint), and fix the lint's message. | `e7e50526d`, `e28366cd0`, `8a20eb3bc` | squash, then ready | No behavior change |
+| T1 | Export the debug flags from the public libraries. | `7a67f0549` | folded into P4 | P4 exports `riverpodDebugValidateInternalState` from all three packages. The devtool flag goes with D3. |
+| T2 | `DevtoolObserver` is `@internal`, not `@visibleForTesting`. | `428069ac4` | superseded | Upstream already marks `DevtoolObserver` `@internal`; the analyzer reports nothing. |
+| T3 | Do not call `sub.read()` inside riverpod (the `avoid_sub_read` lint), and fix the lint's message. | `e7e50526d`, `e28366cd0`, `8a20eb3bc` | verified | The `{0}` in the message made the rule throw, so it never reported. That also hid 5 `generic_name` warnings, now fixed. |
 
 ## Analyzer tooling
 
@@ -106,8 +110,8 @@ tools use.
 
 | ID | Change | Fork commits | Status | Notes |
 |---|---|---|---|---|
-| A1 | Decode manual providers whose modifier is an import prefix or a `PrefixedIdentifier`. | `751b31568`, `a9e1c110c` | squash; conflicts | Test in `a9e1c110c` |
-| A2 | `internal_lint` `generic_name` crashed the analyzer plugin on analyzer 14.6. | `401e0e1c0` | conflict | Repository tooling |
+| A1 | Decode manual providers whose modifier is an import prefix or a `PrefixedIdentifier`. | `751b31568`, `a9e1c110c` | verified | Tests in `riverpod_analyzer_utils_tests` and a unit test of `identifierChain`. |
+| A2 | `internal_lint` `generic_name` crashed the analyzer plugin on analyzer 14.6. | `401e0e1c0` | superseded | Upstream `2daadbf9` fixed the crash another way, with a test. |
 
 ## Test fixes
 
