@@ -143,7 +143,7 @@ Future<bool> _runAll(
     final process = await Process.start(exe, [
       'test',
       if (platform != 'vm') ...['-p', platform],
-      if (name.isNotEmpty) ...['-n', name],
+      if (name.isNotEmpty) ...['--name', name],
       ...tests,
     ], workingDirectory: '$root/$package');
     final out = StringBuffer();

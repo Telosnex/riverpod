@@ -66,3 +66,42 @@
 3. D1 to D3, T1 to T3, A1, A2. X1 to X4 are test-only and have no
    red/green.
 4. Make the patches pass `scripts/tested.sh`.
+
+## 2026-10-31: R7, P1, P3
+
+- R7: the regression reports one dependent build instead of two without the
+  fix. After the dispose pass, the scheduler flushes refreshes that the
+  dispose pass added. The branch stacks on R1. All 1,639 riverpod tests pass.
+- R8: a throwing `ref.onDispose` does not stop other disposes with R1.
+  Removed the trial branch. The extra dispose guard and stale-task recovery
+  remain excluded until a regression needs them.
+- P1: consumers share a TickerMode notifier through an identity set. The
+  per-element error guard stays with the hub. Without that guard, the
+  isolation test fails because other consumers stay paused.
+- P1 regression: unmount the last 4,000 of 8,000 consumers under one real
+  TickerMode. Compare against plain StatefulWidgets. Upstream takes about
+  3.1–3.7 times as long. The hub takes about 0.95–1.13 times as long. The
+  test limit is 2. This timing test needs validation on CI hardware.
+- The first performance probes were misleading. Without a TickerMode
+  ancestor, Flutter supplies a constant notifier. Watching one shared
+  provider also adds a separate quadratic teardown cost. The final probe
+  uses a real TickerMode and consumers that watch no providers.
+- P1: all 161 flutter_riverpod tests pass. `scripts/tested.sh` passes.
+- P2: making the debug ID lazy saves roughly 0.5 µs per scoped container
+  locally. No regression test yet. No patch branch was created.
+- P3: deterministic allocation regression checks that the child initially
+  stores only its local override. Reading an inherited provider caches
+  one entry, with the same pointer as its parent. Red without the fix,
+  green with it.
+- P3: existing layout assertions now inspect local storage where needed.
+  Disposal still checks that lookups across all scopes return null.
+  All 1,637 riverpod tests pass. `scripts/tested.sh` passes. Removed the
+  unrelated loop optimizations from the fork's commit.
+- Fixed `verify_patch.dart`: Flutter accepts `--name`, not `-n`.
+
+### Next
+
+1. D1 to D3, T1 to T3, A1, A2.
+2. Find a regression check for P2, or keep it outside the verified set.
+3. Validate P1's timing regression on CI hardware.
+4. Resolve the remaining `scripts/tested.sh` failures for the earlier patches.
