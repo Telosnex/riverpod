@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'main.g.dart';
@@ -160,15 +160,15 @@ final objectWithExternalFields = Provider<Object>((ref) {
   return ValueNotifier(0);
 });
 
-class _AsyncStateNotifier<StateT> extends AsyncNotifier<StateT> {
+class _AsyncStateNotifier<ValueT> extends AsyncNotifier<ValueT> {
   _AsyncStateNotifier(this._build);
-  final FutureOr<StateT> Function(Ref ref, _AsyncStateNotifier<StateT> self)
+  final FutureOr<ValueT> Function(Ref ref, _AsyncStateNotifier<ValueT> self)
   _build;
 
   // remove protected
   @override
-  Future<StateT> get future;
+  Future<ValueT> get future;
 
   @override
-  FutureOr<StateT> build() => _build(ref, this);
+  FutureOr<ValueT> build() => _build(ref, this);
 }

@@ -2,6 +2,22 @@
 
 - Support analyzer 13 and 14, and Freezed 4. Require Dart 3.13.
 
+## 1.0.0 - 2026-11-06
+
+- Mark the `ClassMembers` extension as `@internal`.
+- Fix bug with latest analyzer
+- Providers whose return type is unresolved (such as `MissingType` or
+  `Future<MissingType>`) now report an `invalidProviderType` error instead of
+  crashing.
+
+## 1.0.0-dev.12 - 2026-09-04
+
+- Upgraded `analyzer` to `<15.0.0`
+
+## 1.0.0-dev.11 - 2026-07-27
+
+- Upgraded `analyzer` to `<15.0.0`
+
 ## 1.0.0-dev.10 - 2026-04-23
 
 Support analyzer 12

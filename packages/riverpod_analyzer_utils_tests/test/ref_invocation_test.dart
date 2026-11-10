@@ -3,7 +3,6 @@ import 'package:test/test.dart';
 
 import 'analyzer_test_utils.dart';
 
-// ignore: invalid_use_of_internal_member
 extension on RiverpodAnalysisResult {
   List<RefWatchInvocation> get refWatchInvocations {
     return refInvocations.whereType<RefWatchInvocation>().toList();
@@ -21,7 +20,6 @@ extension on RiverpodAnalysisResult {
 void main() {
   testSource(
     'Parses import aliases',
-    timeout: const Timeout.factor(4),
     runGenerator: true,
     files: {
       'file.dart': '''
@@ -81,9 +79,6 @@ final dependency = Provider((ref) {
     (resolver, unit, units) async {
       final result = await resolver.resolveRiverpodAnalysisResult(
         ignoreErrors: true,
-        // ProviderFor asserts its value is a function or a type. Analyzer 14.6
-        // reports the bogus value as a compile error, which this test allows.
-        allowedCompilerErrorCodes: {'const_eval_throws_exception'},
       );
 
       expect(result.refWatchInvocations, hasLength(1));

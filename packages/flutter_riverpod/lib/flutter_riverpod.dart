@@ -29,9 +29,9 @@ export 'src/internals.dart'
         UncontrolledProviderScope,
         RiverpodWidgetTesterX,
         ProviderListenableSelect,
+        ProviderListenableListenable,
         AsyncResult,
         AsyncValueExtensions,
         AsyncValueIsLoadingException,
         riverpodDebugValidateInternalState,
-        debugTrackProviderCreation,
         debugRiverpodDevtoolEnabled;

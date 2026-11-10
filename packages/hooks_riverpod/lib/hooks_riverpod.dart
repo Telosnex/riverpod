@@ -32,9 +32,9 @@ export 'src/internals.dart'
         StatefulHookConsumerWidget,
         RiverpodWidgetTesterX,
         ProviderListenableSelect,
+        ProviderListenableListenable,
         AsyncResult,
         AsyncValueExtensions,
         AsyncValueIsLoadingException,
         riverpodDebugValidateInternalState,
-        debugTrackProviderCreation,
         debugRiverpodDevtoolEnabled;
