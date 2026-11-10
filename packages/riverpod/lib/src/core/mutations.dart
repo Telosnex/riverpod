@@ -368,8 +368,8 @@ extension<StateT> on Mutation<StateT> {
 
 @internal
 final class MutationImpl<ResultT>
-    with
-        SyncProviderTransformerMixin<
+    extends
+        CustomProviderListenable<
           _MutationNotifier<ResultT>,
           MutationState<ResultT>
         >
@@ -383,6 +383,12 @@ final class MutationImpl<ResultT>
   // ignore: library_private_types_in_public_api, not public
   ProviderListenable<_MutationNotifier<ResultT>> get source =>
       _MutationProvider<ResultT>(this);
+
+  @override
+  // ignore: library_private_types_in_public_api, not public
+  _MutationTransformer<ResultT> createTransformer() {
+    return _MutationTransformer<ResultT>();
+  }
 
   @override
   Object? get key => _key?.$1;
@@ -459,8 +465,9 @@ final class MutationImpl<ResultT>
     ProviderSubscription<_MutationNotifier<ResultT>> sub,
     MutationTransaction ref,
   ) {
-    final _MutationNotifier(:state, :setState, :setRef) =
-        sub.readSafe().valueOrRawException;
+    final _MutationNotifier(:state, :setState, :setRef) = sub
+        .readSafe()
+        .valueOrRawException;
 
     setRef(ref);
 
@@ -472,8 +479,13 @@ final class MutationImpl<ResultT>
     MutationTransaction ref,
     ResultT result,
   ) {
-    final _MutationNotifier(:state, :setState) =
-        sub.readSafe().valueOrRawException;
+    // The subscription may have been closed if the container/element was
+    // disposed while the mutation was still running. In that case there is
+    // no state left to update.
+    if (sub.closed) return;
+    final _MutationNotifier(:state, :setState) = sub
+        .readSafe()
+        .valueOrRawException;
 
     setState(MutationSuccess<ResultT>._(result), ref);
   }
@@ -484,30 +496,14 @@ final class MutationImpl<ResultT>
     Object error,
     StackTrace stackTrace,
   ) {
-    final _MutationNotifier(:state, :setState) =
-        sub.readSafe().valueOrRawException;
+    // See [_mutationSuccess]: the subscription may have been closed by a
+    // disposal that happened while the mutation was running.
+    if (sub.closed) return;
+    final _MutationNotifier(:state, :setState) = sub
+        .readSafe()
+        .valueOrRawException;
 
     setState(MutationError<ResultT>._(error, stackTrace), ref);
-  }
-
-  @internal
-  @override
-  // ignore: library_private_types_in_public_api, not public
-  ProviderTransformer<_MutationNotifier<ResultT>, MutationState<ResultT>>
-  transform(
-    ProviderTransformerContext<
-      // ignore: library_private_types_in_public_api, not public
-      _MutationNotifier<ResultT>,
-      MutationState<ResultT>
-    >
-    context,
-  ) {
-    return ProviderTransformer(
-      initState: (self) => context.sourceState.requireValue.state,
-      listener: (self, prev, next) {
-        self.state = AsyncResult.guard(() => next.requireValue.state);
-      },
-    );
   }
 
   bool _matchesT(Mutation<Object?> other) => other is Mutation<ResultT>;
@@ -536,6 +532,25 @@ final class MutationImpl<ResultT>
     ], ', ');
     buffer.write(')');
     return buffer.toString();
+  }
+}
+
+final class _MutationTransformer<ResultT>
+    extends
+        SyncProviderTransformer2<
+          _MutationNotifier<ResultT>,
+          MutationState<ResultT>,
+          MutationImpl<ResultT>
+        > {
+  @override
+  MutationState<ResultT> initState() => sourceState.requireValue.state;
+
+  @override
+  void onEvent(
+    AsyncResult<_MutationNotifier<ResultT>> prev,
+    AsyncResult<_MutationNotifier<ResultT>> next,
+  ) {
+    state = AsyncResult.guard(() => next.requireValue.state);
   }
 }
 

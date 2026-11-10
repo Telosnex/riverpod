@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:devtools_app_shared/ui.dart';
 import 'package:devtools_app_shared/ui.dart' as devtools_shared_ui;
-import 'package:flutter/material.dart';
+import 'package:devtools_app_shared/ui.dart';
+import 'package:devtools_app_shared/utils.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-// ignore: implementation_imports
 import 'package:hooks_riverpod/src/internals.dart' as internals;
+import 'package:material_ui/material_ui.dart';
 
 import 'elements.dart';
 import 'frames.dart';
@@ -16,6 +16,7 @@ import 'provider_list.dart';
 import 'providers/providers.dart';
 import 'state_inspector/inspector.dart';
 import 'terminal.dart';
+import 'ui_primitives/icon_button.dart';
 import 'ui_primitives/panel.dart';
 import 'ui_primitives/search_bar.dart';
 import 'vm_service.dart';
@@ -52,16 +53,13 @@ class InspectorSettingsButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return DevtoolIconButton(
       onPressed: () => showDialog<void>(
         context: context,
         builder: (context) => const _InspectorSettingsDialog(),
       ),
       tooltip: 'Inspector settings',
       icon: const Icon(Icons.settings),
-      iconSize: 18,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
     );
   }
 }
@@ -204,6 +202,42 @@ extension DevtoolTheme on ThemeData {
   Color get panelBorderColor => focusColor;
 }
 
+class InvalidateProviderButton extends ConsumerWidget {
+  const InvalidateProviderButton({super.key, required this.element});
+
+  /// The live ProviderElement backing the provider to invalidate.
+  final ElementMeta element;
+
+  Future<void> _invalidate(WidgetRef ref) async {
+    final isAlive = Disposable();
+
+    String? errorMessage;
+    try {
+      final evalFactory = await ref.read(evalProvider.future);
+      await element.invalidate(evalFactory, isAlive: isAlive);
+    } catch (error) {
+      errorMessage = error.toString();
+    } finally {
+      isAlive.dispose();
+    }
+
+    if (errorMessage != null && ref.context.mounted) {
+      ScaffoldMessenger.of(ref.context).showSnackBar(
+        SnackBar(content: Text('Failed to invalidate: $errorMessage')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return DevtoolIconButton(
+      onPressed: () => _invalidate(ref),
+      tooltip: 'Invalidate provider',
+      icon: const Icon(Icons.refresh),
+    );
+  }
+}
+
 const dividerHeight = 16.0;
 
 class ProviderViewer extends StatelessWidget {
@@ -223,13 +257,21 @@ class ProviderViewer extends StatelessWidget {
         child: Column(
           spacing: denseRowSpacing,
           children: [
-            const devtools_shared_ui.AreaPaneHeader(
+            devtools_shared_ui.AreaPaneHeader(
               roundedTopBorder: false,
               includeTopBorder: false,
-              title: Text('State'),
-              actions: [InspectorSettingsButton()],
+              title: const Text('State'),
+              actions: [
+                InvalidateProviderButton(element: element),
+                const InspectorSettingsButton(),
+              ],
             ),
-            Expanded(child: Inspector(object: element.state.state)),
+            Expanded(
+              child: Inspector(
+                key: ValueKey(element.provider.elementId),
+                object: element.state.state,
+              ),
+            ),
           ],
         ),
       ),
@@ -249,7 +291,10 @@ class ProviderViewer extends StatelessWidget {
         content: Material(
           child: Padding(
             padding: const .symmetric(vertical: 8),
-            child: Inspector(object: notifier.state),
+            child: Inspector(
+              key: ValueKey(element.provider.elementId),
+              object: notifier.state,
+            ),
           ),
         ),
       );
@@ -275,7 +320,7 @@ class ProviderViewer extends StatelessWidget {
 
     return Panel(
       child: SplitPane(
-        // TODO remove key, Blocked by: https://github.com/flutter/devtools/issues/9648
+        // TODO remove key once devtools_app_shared 0.5.2 is released, with the fix of https://github.com/flutter/devtools/pull/9822
         key: ValueKey(notifier != null),
         axis: .vertical,
         initialFractions: [
@@ -328,6 +373,7 @@ class _ProviderPickerPanel extends HookConsumerWidget {
             Expanded(
               child: ProviderList(
                 originStates: originStates,
+                showChanges: ref.watch(timeTravelProvider).value ?? false,
                 onSelected: onSelected,
                 selectedId: selectedId,
               ),

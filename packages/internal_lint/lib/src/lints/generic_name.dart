@@ -27,26 +27,27 @@ class GenericName extends AnalysisRule {
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    final visitor = _Visitor(this, context);
+    final visitor = _Visitor(this);
     registry.addTypeParameter(this, visitor);
   }
 }
 
 class _Visitor extends SimpleAstVisitor<void> {
-  _Visitor(this.rule, this.context);
+  _Visitor(this.rule);
 
   final GenericName rule;
-  final RuleContext context;
 
   @override
   void visitTypeParameter(TypeParameter node) {
-    // The unit being visited. With analyzer 14.6, currentUnit is null in
-    // registerNodeProcessors, and the plugin crashed on every file.
-    final path = context.currentUnit?.file.path ?? '';
-    if (path.endsWith('.g.dart') || path.endsWith('.freezed.dart')) return;
     if (node.name.lexeme.endsWith('T') && node.name.lexeme.length >= 2) {
       return;
     }
+
+    // Processors are registered once per library, while generated files are
+    // its parts, so they are skipped by unit.
+    final unit = node.root as CompilationUnit;
+    final path = unit.declaredFragment?.source.fullName ?? '';
+    if (path.endsWith('.g.dart') || path.endsWith('.freezed.dart')) return;
 
     rule.reportAtNode(node);
   }

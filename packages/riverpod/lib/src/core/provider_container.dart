@@ -78,18 +78,55 @@ class $ProviderPointer implements _PointerBase {
           providerOverride == null &&
           (origin.$allTransitiveDependencies?.isNotEmpty ?? false));
 
+  bool get permanent =>
+      providerOverride != null &&
+      providerOverride is! TransitiveProviderOverride;
+
+  // An unmounted element may already hold weak listeners. Keep its pointer
+  // until the element is disposed so those listeners survive initialization.
+  bool get removable => !permanent && element == null && subscriptions.isEmpty;
+
   final ProviderBase<Object?> origin;
 
   /// The override associated with this provider, if any.
-  ///
-  /// If non-null, this pointer should **never** be removed.
   ///
   /// This override may be implicitly created by [ProviderOrFamily.$allTransitiveDependencies].
   // ignore: library_private_types_in_public_api, not public API
   _ProviderOverride? providerOverride;
   ProviderElement? element;
+  final subscriptions = <_ExistenceSubscription>[];
+  bool existence = false;
+  bool _lastNotifiedExistence = false;
+  Future<void>? _pendingExistenceChange;
+
   @override
   final ProviderContainer targetContainer;
+
+  void _onExistenceChanged(bool value) {
+    if (existence == value) return;
+    existence = value;
+    _scheduleExistenceChange();
+  }
+
+  void _scheduleExistenceChange() {
+    if (_pendingExistenceChange != null) return;
+
+    _pendingExistenceChange = Future.microtask(() {
+      _pendingExistenceChange = null;
+      _notifyExistence();
+    });
+  }
+
+  void _notifyExistence() {
+    if (_lastNotifiedExistence == existence) return;
+
+    for (final subscription in subscriptions.toList()) {
+      if (!subscription.closed) {
+        subscription._notifyData(_lastNotifiedExistence, existence);
+      }
+    }
+    _lastNotifiedExistence = existence;
+  }
 
   @override
   String toString() {
@@ -119,25 +156,20 @@ extension<PointerT extends _PointerBase, ProviderT extends ProviderOrFamily>
     final pointer = this[provider];
     if (pointer != null) return pointer;
 
-    final deepestTransitiveDependencyContainer = currentContainer
-        ._pointerManager
-        .findDeepestTransitiveDependencyProviderContainer(provider);
+    final targetResult = currentContainer._pointerManager._getTargetContainer(
+      provider,
+      targetContainer,
+    );
 
-    final target =
-        deepestTransitiveDependencyContainer ??
-        pointer?.targetContainer ??
-        targetContainer ??
-        currentContainer._root ??
-        currentContainer;
-
-    if (target == currentContainer) {
+    if (targetResult.target == currentContainer) {
       return this[provider] = scope(
-        override:
-            deepestTransitiveDependencyContainer == null ? null : provider,
+        override: targetResult.deepestTransitiveDependencyContainer == null
+            ? null
+            : provider,
       );
     }
 
-    return this[provider] = inherit(target);
+    return this[provider] = inherit(targetResult.target);
   }
 }
 
@@ -279,17 +311,16 @@ class ProviderDirectory implements _PointerBase {
       currentContainer: currentContainer,
       targetContainer: targetContainer,
       inherit: (target) => target._pointerManager.upsertPointer(provider),
-      scope:
-          ({override}) => $ProviderPointer(
-            targetContainer: currentContainer,
-            providerOverride:
-                override == null ||
-                        provider.from !=
-                            null //
-                    ? null
-                    : TransitiveProviderOverride(override),
-            origin: provider,
-          ),
+      scope: ({override}) => $ProviderPointer(
+        targetContainer: currentContainer,
+        providerOverride:
+            override == null ||
+                provider.from !=
+                    null //
+            ? null
+            : TransitiveProviderOverride(override),
+        origin: provider,
+      ),
     );
   }
 
@@ -328,6 +359,7 @@ class ProviderDirectory implements _PointerBase {
       /// initialize the provider again.
       /// This has otherwise no impact unless there is a bug.
       pointer.element = element;
+      pointer._onExistenceChanged(true);
     }
 
     return pointer;
@@ -432,6 +464,45 @@ class ProviderPointerManager {
   final ProviderDirectory orphanPointers;
   final HashMap<Family, ProviderDirectory> familyPointers;
 
+  ProviderSubscriptionImpl<bool> listenToExistence(
+    ProviderBase<Object?> provider, {
+    required Node source,
+    // ignore: avoid_positional_boolean_parameters
+    required void Function(bool? previous, bool next) listener,
+    required OnError onError,
+    required bool weak,
+  }) {
+    final pointer = upsertPointer(provider);
+    final sub = _ExistenceSubscription(
+      pointer: pointer,
+      ownerContainer: source.container,
+      source: source,
+      listener: listener,
+      errorListener: onError,
+      weak: weak,
+    );
+    pointer.subscriptions.add(sub);
+    return sub;
+  }
+
+  void _closeExistenceSubscriptions(ProviderContainer ownerContainer) {
+    final pointers = <$ProviderPointer>[
+      ...orphanPointers.pointers.values,
+      ...familyPointers.values.expand((directory) => directory.pointers.values),
+    ];
+    for (final pointer in pointers) {
+      for (final subscription in pointer.subscriptions.toList()) {
+        if (subscription.ownerContainer == ownerContainer) {
+          ProviderSubscriptionImpl<void> outerSubscription = subscription;
+          while (outerSubscription._parent != null) {
+            outerSubscription = outerSubscription._parent!;
+          }
+          outerSubscription.close();
+        }
+      }
+    }
+  }
+
   void _initializeProviderOverride(_ProviderOverride override) {
     final from = override.origin.from;
 
@@ -440,11 +511,10 @@ class ProviderPointerManager {
       return;
     }
 
-    final familyPointer =
-        familyPointers[from] ??= ProviderDirectory.empty(
-          container._root ?? container,
-          familyOverride: null,
-        );
+    final familyPointer = familyPointers[from] ??= ProviderDirectory.empty(
+      container._root ?? container,
+      familyOverride: null,
+    );
 
     familyPointer.addProviderOverride(override, targetContainer: container);
   }
@@ -480,6 +550,20 @@ class ProviderPointerManager {
     }
   }
 
+  /// Determines the container in which a provider/family would be mounted.
+  ({
+    ProviderContainer target,
+    ProviderContainer? deepestTransitiveDependencyContainer,
+  })
+  _getTargetContainer(
+    ProviderOrFamily provider,
+    ProviderContainer? fallbackTarget,
+  ) {
+    final deepest = findDeepestTransitiveDependencyProviderContainer(provider);
+    final target = deepest ?? fallbackTarget ?? container._root ?? container;
+    return (target: target, deepestTransitiveDependencyContainer: deepest);
+  }
+
   /// Obtains the [ProviderContainer] in which provider/family should be mounted,
   /// if the provider is locally scoped.
   ///
@@ -503,11 +587,7 @@ class ProviderPointerManager {
                 familyPointer.pointers.values.map((e) => e.targetContainer),
               );
             case $ProviderBaseImpl():
-              return [
-                if (readPointer(dependency)?.targetContainer
-                    case final container?)
-                  container,
-              ];
+              return [?readPointer(dependency)?.targetContainer];
           }
         });
 
@@ -539,9 +619,9 @@ class ProviderPointerManager {
       scope: ({override}) {
         final familyOverride =
             override ==
-                    null //
-                ? null
-                : TransitiveFamilyOverride(override);
+                null //
+            ? null
+            : TransitiveFamilyOverride(override);
 
         final parent = container.parent?._pointerManager.familyPointers[family];
 
@@ -576,7 +656,20 @@ class ProviderPointerManager {
   }
 
   ProviderElement? readElement(ProviderBase<Object?> provider) {
-    return readPointer(provider)?.element;
+    final pointer = readPointer(provider);
+    if (pointer != null) return pointer.element;
+
+    // The provider was never read through this container.
+    // Determine the container in which a read would mount the provider,
+    // the same way "_upsert" would, and look there instead.
+    final target = _getTargetContainer(
+      provider,
+      readDirectory(provider)?.targetContainer,
+    ).target;
+
+    if (target == container) return null;
+
+    return target._pointerManager.readElement(provider);
   }
 
   ProviderDirectory upsertDirectory(ProviderBase<Object?> provider) {
@@ -592,11 +685,13 @@ class ProviderPointerManager {
   $ProviderPointer upsertPointer(ProviderBase<Object?> provider) {
     return upsertDirectory(
       provider,
-    ).mount(provider, currentContainer: container);
+    ).upsertPointer(provider, currentContainer: container);
   }
 
   ProviderElement upsertElement(ProviderBase<Object?> provider) {
-    return upsertPointer(provider).element!;
+    return upsertDirectory(
+      provider,
+    ).mount(provider, currentContainer: container).element!;
   }
 
   /// Traverse the [ProviderElement]s associated with this [ProviderContainer].
@@ -613,9 +708,39 @@ class ProviderPointerManager {
   /// Read the [ProviderElement] for a provider, without creating it if it doesn't exist.
   Iterable<ProviderElement> listFamily(Family family) {
     final _familyPointers = familyPointers[family];
-    if (_familyPointers == null) return const [];
 
-    return _familyPointers.pointers.values.map((e) => e.element).nonNulls;
+    if (_familyPointers == null) {
+      // The family was never read through this container.
+      // Determine the container in which a read would mount the family,
+      // the same way "_mountFamily" would, and look there instead.
+      final target = _getTargetContainer(family, null).target;
+
+      if (target == container) return const [];
+
+      return target._pointerManager.listFamily(family);
+    }
+
+    var pointers = _familyPointers.pointers.values;
+
+    if (_familyPointers.targetContainer != container) {
+      // The directory was inherited from another container. Providers mounted
+      // in that container after the directory was forked are not in the local
+      // copy of the directory, so they need to be included separately.
+      final targetPointers = _familyPointers
+          .targetContainer
+          ._pointerManager
+          .familyPointers[family];
+
+      if (targetPointers != null && targetPointers != _familyPointers) {
+        pointers = pointers.followedBy(
+          targetPointers.pointers.entries
+              .where((e) => !_familyPointers.pointers.containsKey(e.key))
+              .map((e) => e.value),
+        );
+      }
+    }
+
+    return pointers.map((e) => e.element).nonNulls;
   }
 
   Iterable<ProviderReference> listFamilyProviders(Family family) {
@@ -663,21 +788,17 @@ class ProviderPointerManager {
         );
   }
 
-  /// Remove a provider from this container.
+  /// Try to remove a provider from this container.
   ///
-  /// Noop if the provider is from an override or doesn't exist.
+  /// Noop if the provider isn't [$ProviderPointer.removable] or doesn't exist.
   ///
-  /// Returns the associated pointer, even if it was not removed.
-  $ProviderPointer? remove(ProviderBase<Object?> provider) {
+  /// Returns the provider's pointer, even if it was not removed.
+  $ProviderPointer? tryRemove(ProviderBase<Object?> provider) {
     final directory = readDirectory(provider);
     if (directory == null) return null;
 
     final pointer = directory.pointers[provider];
-    // If null, nothing to remove.
-    if (pointer == null) return null;
-    // If from an override, must not be removed unless it is a transitive override
-    if (pointer.providerOverride != null &&
-        pointer.providerOverride is! TransitiveProviderOverride) {
+    if (pointer == null || !pointer.removable) {
       return pointer;
     }
 
@@ -967,17 +1088,13 @@ final class ProviderContainer implements MutationTarget {
       }
     }
 
-    _pointerManager =
-        parent != null
-            ? ProviderPointerManager.from(parent, overrides, container: this)
-            : ProviderPointerManager(
-              overrides,
-              container: this,
-              orphanPointers: ProviderDirectory.empty(
-                this,
-                familyOverride: null,
-              ),
-            );
+    _pointerManager = parent != null
+        ? ProviderPointerManager.from(parent, overrides, container: this)
+        : ProviderPointerManager(
+            overrides,
+            container: this,
+            orphanPointers: ProviderDirectory.empty(this, familyOverride: null),
+          );
 
     // Mutate the parent & global state only at the very end.
     // This ensures that if an error is thrown, the parent & global state
@@ -1088,10 +1205,10 @@ final class ProviderContainer implements MutationTarget {
   /// This call is recursive and will wait for ancestor [ProviderContainer]s to
   /// rebuild their providers too.
   Future<void> pump() async {
-    final a = scheduler.pendingFuture;
+    final pendingScheduler = scheduler.pendingFuture;
 
     await Future.wait<void>([
-      if (a != null) a,
+      ?pendingScheduler,
       if (parent case final parent?) parent.pump(),
     ]);
   }
@@ -1119,6 +1236,7 @@ final class ProviderContainer implements MutationTarget {
   }
 
   /// {@macro riverpod.exists}
+  @Deprecated('Use `ref.read/watch/listen(provider.exist)` instead')
   bool exists(ProviderBase<Object?> provider) {
     switch (provider) {
       case $ProviderBaseImpl():
@@ -1145,10 +1263,9 @@ final class ProviderContainer implements MutationTarget {
   /// ref.read(myFamily(0));
   /// ```
   Iterable<ProviderReference> allProviders({Family? family}) {
-    final providers =
-        family != null
-            ? _pointerManager.listFamilyProviders(family)
-            : _pointerManager.listProviders();
+    final providers = family != null
+        ? _pointerManager.listFamilyProviders(family)
+        : _pointerManager.listProviders();
 
     if (container.parent case final parent?) {
       return providers.followedBy(parent.allProviders(family: family));
@@ -1188,7 +1305,7 @@ final class ProviderContainer implements MutationTarget {
     );
     _handleFireImmediately(container, sub, fireImmediately: fireImmediately);
 
-    sub.impl._listenedElement.addDependentSubscription(sub.impl);
+    sub.impl._listenedElement?.addDependentSubscription(sub.impl);
 
     return sub;
   }
@@ -1232,18 +1349,20 @@ final class ProviderContainer implements MutationTarget {
       child._recursivePointerRemoval(provider, pointer);
     }
 
-    _pointerManager.remove(provider);
+    _pointerManager.tryRemove(provider);
   }
 
   void _disposeProvider(ProviderBase<Object?> provider) {
-    final pointer = _pointerManager.remove(provider);
+    final pointer = _pointerManager.readPointer(provider);
     // The provider is already disposed, so we don't need to do anything
     if (pointer == null) return;
 
-    _recursivePointerRemoval(provider, pointer);
+    pointer._onExistenceChanged(false);
 
     pointer.element?.dispose();
     pointer.element = null;
+
+    _recursivePointerRemoval(provider, pointer);
   }
 
   /// Updates the list of provider overrides.
@@ -1351,6 +1470,8 @@ final class ProviderContainer implements MutationTarget {
     }
 
     if (updateChildren) _parent?._children.remove(this);
+
+    _pointerManager._closeExistenceSubscriptions(this);
 
     if (_root == null) scheduler.dispose();
 
@@ -1464,7 +1585,11 @@ abstract base class ProviderObserver {
   void didAddProvider(ProviderObserverContext context, Object? value) {}
 
   /// A provider emitted an error, be it by throwing during initialization
-  /// or by having a [Future]/[Stream] emit an error
+  /// or by having a [Future]/[Stream] emit an error.
+  ///
+  /// This is **not** called when a provider is disposed before emitting its
+  /// first value (see [ProviderDisposedException]). That case is a normal
+  /// lifecycle event, not a failure.
   void providerDidFail(
     ProviderObserverContext context,
     Object error,

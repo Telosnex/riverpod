@@ -1,5 +1,6 @@
 ---
 title: Migrating from 2.0 to 3.0
+version: 1
 ---
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -22,7 +23,8 @@ improve the migration guide, or even include helpers to make the migration easie
 ## Automatic retry
 
 Riverpod 3.0 now [automatically retries](./whats_new.mdx#automatic-retry) failing providers by default.
-This means that if a provider fails to compute its value, it will automatically retry until it succeeds.
+This means that if a provider fails to compute its value, it will automatically retry, up to 10 times by default.
+By default, `Error`s and `ProviderException`s are not retried.
 
 In general, this is a good thing as it makes your app more resilient to transient errors.
 However, you may want to disable/customize this behavior in some cases.
@@ -110,6 +112,38 @@ class MyWidget extends StatelessWidget {
 }
 ```
 
+## Using a Ref after the provider is disposed now throws
+
+In Riverpod 3.0, using a [Ref] after its provider has been disposed throws an
+`UnmountedRefException`. This most commonly happens when a `Ref` is used after
+an `await`, if the provider was disposed (for example rebuilt, or no longer
+listened) while the asynchronous operation was still pending.
+
+In Riverpod 2.0, this did not throw. The new behavior is intentional: continuing
+to use a disposed `Ref` would otherwise silently run stale logic and hide
+life-cycle bugs.
+
+To migrate, guard any usage of `Ref` that happens after an async gap with
+`ref.mounted`, or cancel the pending work with `ref.onDispose`:
+
+```dart
+@riverpod
+class Example extends _$Example {
+  @override
+  Future<int> build() async {
+    final value = await fetchSomething();
+
+    // The provider may have been disposed during the `await`.
+    if (!ref.mounted) return value;
+
+    // Safe to use `ref` again here.
+    ref.read(anotherProvider);
+
+    return value;
+  }
+}
+```
+
 ## StateProvider, StateNotifierProvider, and ChangeNotifierProvider are moved to a new import
 
 In Riverpod 3.0, `StateProvider`, `StateNotifierProvider`, and `ChangeNotifierProvider` are considered "legacy".  
@@ -171,7 +205,7 @@ In the scenario where you didn't use a `Notifier`, you can refactor your provide
 
 ## ProviderObserver has its interface slightly changed
 
-For the sake of [mutations](./whats_new.mdx#mutations), 
+For the sake of [mutations](./whats_new.mdx#mutations-experimental), 
 the [ProviderObserver] interface has changed slightly.
 
 Instead of two separate parameters for [ProviderContainer] and [ProviderBase], 
@@ -225,7 +259,7 @@ Specifically, `ProviderRef.state`, `Ref.listenSelf` and `FutureProviderRef.futur
     @override
     Future<int> build() async {
       ref.listen(anotherProvider, (previous, next) {
-        ref.state++;
+        state = AsyncData((state.valueOrNull ?? 0) + 1);
       });
     
       listenSelf((previous, next) {
@@ -264,7 +298,7 @@ Specifically, `ProviderRef.state`, `Ref.listenSelf` and `FutureProviderRef.futur
     @override
     Future<int> build() async {
       ref.listen(anotherProvider, (previous, next) {
-        ref.state++;
+        state = AsyncData((state.valueOrNull ?? 0) + 1);
       });
     
       listenSelf((previous, next) {

@@ -1,3 +1,38 @@
+## Unreleased fix
+
+- Fixed the documentation of `Riverpod.retry`, which said the default retry logic
+  retries without limit and retries all failures. It retries up to 10 times and
+  does not retry `Error`s or `ProviderException`s. (thanks to @ZainnQureshii)
+
+## 4.0.8 - 2026-11-06
+### Dependency changes
+
+- `riverpod` upgraded to `3.5.0`
+
+## 4.0.7 - 2026-09-04
+
+### Dependency changes
+
+- `riverpod` upgraded to `3.4.3`
+
+## 4.0.6 - 2026-07-28
+
+### Dependency changes
+
+- `riverpod` upgraded to `3.4.2`
+
+## 4.0.5 - 2026-07-26
+
+### Dependency changes
+
+- `riverpod` upgraded to `3.4.1`
+
+## 4.0.4 - 2026-07-26
+
+### Dependency changes
+
+- `riverpod` upgraded to `3.4.0`
+
 ## 4.0.3 - 2026-06-10
 
 - Fix `AsyncNotifierProvider`/`StreamNotifierProvider` disposing dependencies
