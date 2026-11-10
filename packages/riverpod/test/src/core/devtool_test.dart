@@ -30,6 +30,11 @@ final class _ManualVsync implements Vsync {
 Future<void> _waitForDevtoolEvent() => Future<void>.delayed(Duration.zero);
 
 void main() {
+  // This fork attaches the devtool observer only when
+  // debugRiverpodDevtoolEnabled is set; these tests need it.
+  setUp(() => debugRiverpodDevtoolEnabled = true);
+  tearDown(() => debugRiverpodDevtoolEnabled = false);
+
   test('debug flags are disabled by default', () {
     expect(debugTrackProviderCreation, isFalse);
     expect(debugTrackProviderHistory, isFalse);

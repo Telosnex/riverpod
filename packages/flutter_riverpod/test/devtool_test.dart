@@ -10,6 +10,11 @@ class _Counter extends Notifier<int> {
 }
 
 void main() {
+  // This fork attaches the devtool observer only when
+  // debugRiverpodDevtoolEnabled is set; these tests need it.
+  setUp(() => debugRiverpodDevtoolEnabled = true);
+  tearDown(() => debugRiverpodDevtoolEnabled = false);
+
   testWidgets('counter and dependent updates share a devtool frame', (
     tester,
   ) async {

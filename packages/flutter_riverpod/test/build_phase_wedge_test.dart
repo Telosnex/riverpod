@@ -27,7 +27,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/src/internals.dart'
     show InternalProviderContainer, ProviderTrace;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod/src/internals.dart' show Task, Vsync;
+import 'package:riverpod/src/internals.dart'
+    show ContainerReadElement, Task, Vsync;
 
 import 'utils.dart' show SettableNotifier;
 
@@ -75,22 +76,28 @@ void main() {
         UncontrolledProviderScope(container: container, child: Container()),
       );
 
-      // Alive without any Flutter listener, so the scheduler task skips them
-      // (inactive) and the consumer below is the one that flushes `flushed`
-      // during its build, which invalidates `dependent` mid-build.
+      // On device, a consumer's ref.watch flushed a dirty inactive provider
+      // during its build, which invalidated an inactive dependent mid-build.
+      // Since upstream 3.4.2 (#4837) an inactive provider no longer schedules
+      // a refresh, so that path is closed. The scope guard stays for any other
+      // path: the consumer below schedules the refresh itself, mid-build.
       container.read(flushed);
-      container.read(dependent);
+      final dependentElement = container.readProviderElement(dependent);
       container.read(dep.notifier).state++;
+      var scheduled = false;
 
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
           child: Consumer(
-            builder:
-                (context, ref, _) => Text(
-                  '${ref.watch(flushed)}',
-                  textDirection: TextDirection.ltr,
-                ),
+            builder: (context, ref, _) {
+              final value = ref.watch(flushed);
+              if (!scheduled) {
+                scheduled = true;
+                container.scheduler.scheduleProviderRefresh(dependentElement);
+              }
+              return Text('$value', textDirection: TextDirection.ltr);
+            },
           ),
         ),
       );
