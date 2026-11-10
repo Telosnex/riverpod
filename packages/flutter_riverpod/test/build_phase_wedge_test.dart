@@ -27,8 +27,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/src/internals.dart'
     show InternalProviderContainer, ProviderTrace;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod/legacy.dart';
 import 'package:riverpod/src/internals.dart' show Task, Vsync;
+
+import 'utils.dart' show SettableNotifier;
 
 /// A vsync that never runs its task: stands in for a wedged ProviderScope.
 final class _WedgedVsync implements Vsync {
@@ -51,7 +52,10 @@ void main() {
       final container = ProviderContainer.test();
       addTearDown(container.dispose);
 
-      final dep = StateProvider((ref) => 0, name: 'dep');
+      final dep = NotifierProvider(
+        () => SettableNotifier((ref) => 0),
+        name: 'dep',
+      );
       final flushed = Provider((ref) => ref.watch(dep), name: 'flushed');
       final dependent = Provider(
         (ref) => ref.watch(flushed),
@@ -127,7 +131,7 @@ void main() {
     (tester) async {
       final container = ProviderContainer.test();
       addTearDown(container.dispose);
-      final dep = StateProvider((ref) => 0);
+      final dep = NotifierProvider(() => SettableNotifier((ref) => 0));
       final x = Provider((ref) => ref.watch(dep));
 
       final middle = GlobalKey<_RebuildableState>();

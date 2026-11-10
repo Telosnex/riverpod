@@ -163,7 +163,7 @@ class RiverpodDevtool {
     return session.cacheFrame(obj);
   }
 
-  T withFrameCache<T>(String sessionId, T Function() encode) {
+  ResultT withFrameCache<ResultT>(String sessionId, ResultT Function() encode) {
     if (_encodingSession != null) {
       throw StateError('Nested frame serialization');
     }
@@ -307,7 +307,7 @@ class _DevtoolSession {
     return key;
   }
 
-  T withFrameCache<T>(T Function() encode) {
+  ResultT withFrameCache<ResultT>(ResultT Function() encode) {
     final used = _usedKeys = <String>{};
     final created = _createdKeys = <String>{};
     try {

@@ -1,48 +1,48 @@
 part of '../../framework.dart';
 
 /// Adds [listenable] to [ProviderListenable].
-extension ProviderListenableListenable<T> on ProviderListenable<T> {
+extension ProviderListenableListenable<ValueT> on ProviderListenable<ValueT> {
   /// Exposes a [ValueListenable] that tracks the state of this provider.
   ///
   /// Note:
   /// A unique [ValueListenable] is created per listener on this modifier. As such,
   /// doing `ref.read(provider.listenable)` will have the [ValueListenable] immediately get disposed of.
   /// Consider using `listen/watch` methods instead.
-  ProviderListenable<ValueListenable<T>> get listenable {
+  ProviderListenable<ValueListenable<ValueT>> get listenable {
     return _ListenableListenable(this);
   }
 }
 
 @immutable
-class _ListenableListenable<T>
-    extends CustomProviderListenable<T, ValueListenable<T>> {
+class _ListenableListenable<ValueT>
+    extends CustomProviderListenable<ValueT, ValueListenable<ValueT>> {
   _ListenableListenable(this.source);
 
   @override
-  final ProviderListenable<T> source;
+  final ProviderListenable<ValueT> source;
 
   @override
-  _ListenableTransformer2<T> createTransformer() {
+  _ListenableTransformer2<ValueT> createTransformer() {
     return _ListenableTransformer2();
   }
 
   @override
   bool operator ==(Object other) =>
-      other is _ListenableListenable<T> && other.source == source;
+      other is _ListenableListenable<ValueT> && other.source == source;
 
   @override
-  int get hashCode => Object.hash(T, source);
+  int get hashCode => Object.hash(ValueT, source);
 }
 
-final class _ListenableTransformer2<T>
+final class _ListenableTransformer2<ValueT>
     extends
         SyncProviderTransformer2<
-          T,
-          ValueListenable<T>,
-          _ListenableListenable<T>
+          ValueT,
+          ValueListenable<ValueT>,
+          _ListenableListenable<ValueT>
         >
     with ChangeNotifier
-    implements ValueListenable<T> {
+    implements ValueListenable<ValueT> {
   void _checkSubscriptionIsAlive() {
     final innerSub = _innerSub;
     if (innerSub == null || innerSub.closed) {
@@ -55,13 +55,13 @@ final class _ListenableTransformer2<T>
   }
 
   @override
-  T get value {
+  ValueT get value {
     _checkSubscriptionIsAlive();
     return read();
   }
 
   @override
-  ValueListenable<T> initState() {
+  ValueListenable<ValueT> initState() {
     // Start paused so that if no listener is added to the listenable,
     // the source provider is paused.
     pause();
@@ -69,7 +69,7 @@ final class _ListenableTransformer2<T>
   }
 
   @override
-  void onEvent(AsyncResult<T> prev, AsyncResult<T> next) {
+  void onEvent(AsyncResult<ValueT> prev, AsyncResult<ValueT> next) {
     notifyListeners();
   }
 

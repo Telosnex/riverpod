@@ -162,7 +162,9 @@ abstract base class ProviderTransformer2<
 
   /// Reads the latest value of [CustomProviderListenable.source]., bypassing the pause state.
   InT read() {
-    if (_innerSub case final innerSub?) return innerSub.read();
+    if (_innerSub case final innerSub?) {
+      return innerSub.readSafe().valueOrProviderException;
+    }
 
     throw StateError('Cannot call read() from a constructor.');
   }
@@ -232,7 +234,7 @@ abstract base class ProviderTransformer2<
     );
 
     // 'weak' is lazy loaded, but weak:false isn't.
-    if (!weak) outerSub.read();
+    if (!weak) outerSub.readSafe().valueOrProviderException;
 
     return outerSub;
   }

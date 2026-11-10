@@ -47,3 +47,7 @@ allowed:
   # The lint against legacy providers, its docs and its tests.
   - packages/riverpod_lint/README.md
   - packages/riverpod_lint_flutter_test/test/lints/unsupported_provider_value*.dart
+  # Telosnex: research comparing handwritten providers, StateProvider
+  # included, with @riverpod, and the tests behind its claims.
+  - docs/research/handwritten-vs-generated-riverpod.md
+  - packages/riverpod_generator/test/provider_tradeoffs_test.dart

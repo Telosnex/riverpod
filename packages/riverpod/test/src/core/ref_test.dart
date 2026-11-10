@@ -448,7 +448,9 @@ void main() {
             }
           };
 
-          final dependency = StateProvider((ref) => 0);
+          final dependency = NotifierProvider(
+            () => SettableNotifier((ref) => 0),
+          );
           final child = Provider((ref) => ref.watch(dependency));
           final parent = Provider((ref) => ref.watch(child));
 
@@ -1220,7 +1222,9 @@ void main() {
             final container = ProviderContainer.test();
             var clearedBuilds = 0;
             final cleared = Provider.autoDispose((ref) => clearedBuilds++);
-            final active = StateProvider.autoDispose((ref) => 0);
+            final active = NotifierProvider.autoDispose(
+              () => SettableNotifier((ref) => 0),
+            );
             final cache = Provider((ref) {
               ref.listen(cleared, weak: true, (previous, next) {});
               ref.listen(active, weak: true, (previous, next) {});

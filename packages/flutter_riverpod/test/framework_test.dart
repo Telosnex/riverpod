@@ -323,7 +323,7 @@ void main() {
       final container = ProviderContainer.test();
       addTearDown(container.dispose);
 
-      final dep = StateProvider((ref) => 0);
+      final dep = NotifierProvider(() => SettableNotifier((ref) => 0));
       final flushedProvider = Provider((ref) => ref.watch(dep));
       final dependentProvider = Provider((ref) => ref.watch(flushedProvider));
 
@@ -483,7 +483,7 @@ void main() {
     addTearDown(container.dispose);
 
     final providerToDispose = Provider.autoDispose((ref) => 0);
-    final dependency = StateProvider((ref) => 0);
+    final dependency = NotifierProvider(() => SettableNotifier((ref) => 0));
     var buildCount = 0;
     final providerToRefresh = Provider((ref) {
       buildCount++;
