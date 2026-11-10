@@ -1,0 +1,19 @@
+# Upstream sources, checked daily by the Upstream watch workflow
+# (telosnex_ci_tools, lib/src/upstream.dart). Set `seen` to skip an update.
+sources:
+  # The repository this one is a fork of. The pin is the last upstream commit
+  # merged here: update it with each merge. Alert once the oldest unmerged
+  # commit is a week old.
+  - name: rrousselGit/riverpod
+    branch: https://github.com/rrousselGit/riverpod
+    pin: 2fa6ad2ae2bafe3a04b61acb2c151d75138904f9
+    lag_days: 7
+    # The packages that the app takes from this fork.
+    paths:
+      - packages/riverpod
+      - packages/flutter_riverpod
+      - packages/hooks_riverpod
+      - packages/riverpod_annotation
+      - packages/riverpod_generator
+      - packages/riverpod_analyzer_utils
+      - packages/riverpod_lint
