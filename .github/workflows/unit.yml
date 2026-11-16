@@ -37,13 +37,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@461a03187b073db7df0237e9666e4fbd6782627d # v0.5.18
-      - uses: Telosnex/telosnex_ci_tools/actions/lint@461a03187b073db7df0237e9666e4fbd6782627d # v0.5.18
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@6747daa138553c20271dc0bd40bfb9522638537c # v0.5.19
+      - uses: Telosnex/telosnex_ci_tools/actions/lint@6747daa138553c20271dc0bd40bfb9522638537c # v0.5.19
       # The root pubspec.yaml is a pub workspace: one resolution for every
       # package and example. pubspec.lock is not committed, so CI resolves the
       # newest versions that the constraints allow.
       - run: flutter pub get
-      - uses: Telosnex/telosnex_ci_tools/actions/check-clean-tree@461a03187b073db7df0237e9666e4fbd6782627d # v0.5.18
+      - uses: Telosnex/telosnex_ci_tools/actions/check-clean-tree@6747daa138553c20271dc0bd40bfb9522638537c # v0.5.19
         with:
           message: 'flutter pub get changed files. Commit them alone as "chore: flutter <version> debris".'
       # Errors and warnings fail; infos (lints that newer SDKs added) do not.
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@461a03187b073db7df0237e9666e4fbd6782627d # v0.5.18
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@6747daa138553c20271dc0bd40bfb9522638537c # v0.5.19
       - run: flutter pub get
       # One package at a time. scripts/generate.sh runs them in parallel,
       # which races: the build of packages/riverpod also claims example/ and
@@ -81,7 +81,7 @@ jobs:
             (cd "$dir" && dart run build_runner build)
             echo "::endgroup::"
           done
-      - uses: Telosnex/telosnex_ci_tools/actions/check-clean-tree@461a03187b073db7df0237e9666e4fbd6782627d # v0.5.18
+      - uses: Telosnex/telosnex_ci_tools/actions/check-clean-tree@6747daa138553c20271dc0bd40bfb9522638537c # v0.5.19
         with:
           message: The generated files are not current. Run the build_runner step of unit.yml and commit the result.
 
@@ -93,7 +93,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@461a03187b073db7df0237e9666e4fbd6782627d # v0.5.18
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@6747daa138553c20271dc0bd40bfb9522638537c # v0.5.19
       - run: flutter pub get
       - name: riverpod
         working-directory: packages/riverpod
@@ -129,7 +129,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@461a03187b073db7df0237e9666e4fbd6782627d # v0.5.18
+      - uses: Telosnex/telosnex_ci_tools/actions/setup-flutter@6747daa138553c20271dc0bd40bfb9522638537c # v0.5.19
       - run: flutter pub get
       - name: riverpod_generator
         working-directory: packages/riverpod_generator
