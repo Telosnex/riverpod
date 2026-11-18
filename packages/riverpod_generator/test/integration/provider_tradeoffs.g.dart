@@ -154,10 +154,7 @@ final class GeneratedCounterProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
+    return $overrideWithValue(value);
   }
 }
 
@@ -459,10 +456,7 @@ final class GeneratedFamilyCounterProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(int value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<int>(value),
-    );
+    return $overrideWithValue(value);
   }
 
   @override
@@ -724,10 +718,7 @@ final class GeneratedEqualProvider
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(EqualValue value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<EqualValue>(value),
-    );
+    return $overrideWithValue(value);
   }
 }
 
