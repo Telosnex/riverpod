@@ -19,9 +19,9 @@
   frames.
 - Devtools inspection caches are released when their client closes or stops
   renewing its session for 30 seconds, including after an abrupt disconnect.
-- Deprecated `Ref.exist`.
-- Added `provider.exist`, which is listenable.
-  This enables writing `ref.listen(provider.exist, ...)`.
+- Deprecated `Ref.exists`.
+- Added `provider.exists`, which is listenable.
+  This enables writing `ref.listen(provider.exists, ...)`.
 - Fix `selectAsync` notifying a closed subscription after an upstream refresh.
 - Fixed `ref.read`/`container.read` of `provider.listenable` throwing an internal `StateError` on `.value`; it now throws a clear one explaining `.listenable` needs `ref.watch`, `ref.listen` or `container.listen` instead (thanks to @Yasser-Ameur)
 - Fixed a debug-only infinite loop in the circular-dependency check. Closing a
@@ -1627,7 +1627,7 @@ Fixed a bug that prevented the use of `ConsumerWidget` under normal circumstance
 - `ref.watch` on non ".autoDispose" providers can no longer read ".autoDispose"
   providers.
 
-  For more info, see http://riverpod.dev/docs/concepts/modifiers/auto_dispose#the-argument-type-autodisposeprovider-cant-be-assigned-to-the-parameter-type-alwaysaliveproviderbase
+  For more info, see https://pub.dev/documentation/hooks_riverpod/latest/hooks_riverpod/Provider/autoDispose-constant.html
 
 - `ScopedProvider` now accepts `null` as a function:
 
