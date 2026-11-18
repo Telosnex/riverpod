@@ -8,6 +8,10 @@
 # Steps (default: all). Whatever order they are given in, they run as:
 #   graph       scripts/graph.sh --check       package_graph.yaml is current
 #   generate    scripts/generate.sh --check    generated code is current
+#   snippets    scripts/snippets.sh --check    the Dart snippets of the docs
+#                                              are extracted into
+#                                              tools/doc_snippets/snippets,
+#                                              where analyze checks them
 #   format      scripts/format.sh
 #   analyze     scripts/analyze.sh, per package
 #   test        scripts/test.sh --coverage, per package, followed by
@@ -24,6 +28,9 @@
 #                                              links an open GitHub issue,
 #                                              but those baselines/issues.yaml
 #                                              exempts
+#   links       scripts/links.sh               the links of the Markdown
+#                                              files and of the comments
+#                                              of the Dart files are valid
 #   mutation    scripts/mutation.sh            the test of each
 #                                              lib/ file of packages/riverpod
 #                                              kills the mutants on its
@@ -32,9 +39,9 @@
 #                                              those baselines/mutation.yaml
 #                                              exempts). Slow, so not run by
 #                                              default nor by `all`
-# graph and generate run first, one after the other, since the rest reads
-# their output. format, analyze, test, changelog, tested, legacy and issues
-# then share one parallel pool. mutation runs last, alone, as it changes the
+# graph, generate and snippets run first, one after the other, since the rest
+# reads their output. format, analyze, test, changelog, tested, legacy, issues
+# and links then share one parallel pool. mutation runs last, alone, as it changes the
 # files in place. Each failure is listed with the exact command that re-runs
 # it.
 #
@@ -42,7 +49,8 @@
 #   -p, --package PATH  Only this package (repeatable). Applies to generate,
 #                       format, analyze, test and tested.
 #   -j, --jobs N        Max parallel tasks (default: CPU count; or CHECK_JOBS).
-#   --fix               graph, generate, format: fix instead of failing.
+#   --fix               graph, generate, snippets, format: fix instead of
+#                       failing.
 #   --no-coverage       Skip collecting test coverage, and so the check
 #                       that the tests cover every changed lib/ line.
 #   --no-coverage-check Collect test coverage, but skip that check (CI uses
@@ -61,7 +69,7 @@
 # Examples:
 #   scripts/check.sh                                 # everything CI runs, and more
 #   scripts/check.sh analyze test -p packages/riverpod
-#   scripts/check.sh graph generate format --fix     # fix what can be fixed
+#   scripts/check.sh graph generate snippets format --fix  # fix what can be fixed
 
 set -uo pipefail
 # shellcheck source=lib/common.sh
@@ -90,12 +98,12 @@ while [ $# -gt 0 ]; do
     --mutate-all) mutate_all=1; shift ;;
     --mutation-parts) [ $# -ge 2 ] || die "$1 needs a folder"; mutation_parts="$2"; shift 2 ;;
     -h|--help)    usage; exit 0 ;;
-    all)          steps="$steps graph generate format analyze test changelog tested legacy issues"; shift ;;
-    graph|generate|format|analyze|test|changelog|tested|legacy|issues|mutation) steps="$steps $1"; shift ;;
+    all)          steps="$steps graph generate snippets format analyze test changelog tested legacy issues links"; shift ;;
+    graph|generate|snippets|format|analyze|test|changelog|tested|legacy|issues|links|mutation) steps="$steps $1"; shift ;;
     *)            die "unknown argument '$1' (see --help)" ;;
   esac
 done
-[ -z "$steps" ] && steps="graph generate format analyze test changelog tested legacy issues"
+[ -z "$steps" ] && steps="graph generate snippets format analyze test changelog tested legacy issues links"
 has_step() { [[ " $steps " == *" $1 "* ]]; }
 
 [[ "$POOL_JOBS" =~ ^[1-9][0-9]*$ ]] || die "--jobs must be a positive number"
@@ -128,8 +136,8 @@ pool_init
 
 # One `pub get` up front (and global tools activated once), so the parallel
 # scripts below never race on them.
-if has_step graph || has_step generate || has_step format || has_step analyze || has_step test ||
-   has_step tested || has_step legacy || has_step issues; then
+if has_step graph || has_step generate || has_step snippets || has_step format || has_step analyze || has_step test ||
+   has_step tested || has_step legacy || has_step issues || has_step links; then
   ensure_deps
 fi
 if has_step test && [ "$coverage" != 0 ]; then ensure_pub_global coverage coverage; fi
@@ -146,9 +154,13 @@ if has_step generate; then
   echo "==> generate"
   pool_inline "generate" "scripts/generate.sh $(flag "" --check) -j $POOL_JOBS$selected"
 fi
+if has_step snippets; then
+  echo "==> snippets"
+  pool_inline "snippets" "scripts/snippets.sh$(flag "" " --check")"
+fi
 
 pool_steps=""
-for s in format analyze test changelog tested legacy issues; do has_step "$s" && pool_steps="$pool_steps $s"; done
+for s in format analyze test changelog tested legacy issues links; do has_step "$s" && pool_steps="$pool_steps $s"; done
 if [ -n "$pool_steps" ]; then
   echo "==>$pool_steps"
   # Queued slowest-first: tests, then analysis, then the quick checks.
@@ -171,6 +183,7 @@ if [ -n "$pool_steps" ]; then
   has_step tested && pool_add "tested" "scripts/tested.sh --base $base$selected"
   has_step legacy && pool_add "legacy" "scripts/legacy.sh"
   has_step issues && pool_add "issues" "scripts/issues.sh"
+  has_step links && pool_add "links" "scripts/links.sh"
   pool_run
 fi
 

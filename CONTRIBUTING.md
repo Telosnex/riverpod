@@ -134,6 +134,81 @@ lower an entry once its file has fewer unlinked comments. Locally, checking
 that the issues are open needs `GITHUB_TOKEN` or `gh auth login`, and is
 skipped otherwise.
 
+#### Links are valid
+
+`scripts/check.sh links` (part of CI) fails when a link of a Markdown or MDX
+file, or a URL in a comment of a Dart file, is broken:
+
+- A path must be a file of the repository or, in the docs of the website, one
+  of its pages or static files.
+- `<Link documentID="concepts2/providers" hash="heading" />` must name a page
+  of the website and one of its headings, and `<DartPad id="..." />` a gist.
+- A `#fragment` must be a heading of the Markdown file it links.
+- A reference link, `[text][label]`, must be defined.
+- A URL of `riverpod.dev`, or of a file of this repository on GitHub, is
+  checked against your working copy. So it can link what your change adds.
+- Any other URL is requested, and fails when its server answers 404 or 410, or
+  when its host does not exist. A URL that cannot be verified, as its server
+  is down or refuses scripts, is only listed. `scripts/links.sh --offline`
+  skips those requests.
+
+Code has no links, so write the URLs that an example makes up in backticks or
+in a code block. Generated files and the translations of the docs are exempt,
+as is what `baselines/links.yaml` ignores.
+
+#### Code snippets are analyzed
+
+`scripts/check.sh snippets` (part of CI) extracts every `dart` snippet of the
+doc comments, and of the Markdown and MDX files, into a Dart file of
+`tools/doc_snippets/snippets`. Those files are committed and analyzed like any
+other code, so a snippet that no longer compiles fails CI. The n-th snippet of
+`packages/riverpod/README.md` is extracted to
+`tools/doc_snippets/snippets/packages/riverpod/README_md/snippet_n.dart`. Run
+`scripts/snippets.sh` after changing a snippet.
+
+A snippet need not be a whole library:
+
+- It imports the main library of its package, such as
+  `package:riverpod/riverpod.dart`. Its own imports work too.
+- Statements and expressions are placed in an `async` function.
+- It can use what its file declares in an "Examples can assume" comment. In a
+  Dart file, that is a `//` comment:
+
+  ```dart no-analyze
+  // Examples can assume:
+  // import 'dart:async';
+  // late Ref ref;
+  ```
+
+  In a Markdown file, an HTML comment:
+
+  ```md
+  <!-- Examples can assume:
+  import 'dart:async';
+  late Ref ref;
+  -->
+  ```
+
+The text after `dart` on the opening fence changes how a snippet is extracted:
+
+- `dart continued`: the snippet follows the code of the one before it, and
+  can use its declarations.
+- `dart name=counter`: the snippet is extracted to `counter.dart` instead of
+  `snippet_n.dart`. Name the snippets that a test of `tools/doc_snippets`
+  imports, so that their path does not change with the snippets around them.
+- `dart no-analyze`: the snippet is not extracted. Only use it for code that
+  is not meant to compile. For an omission, prefer a comment such as
+  `/* ... */`, which is valid code.
+
+A file cannot let its snippets assume a name that one of them declares, as
+that snippet would declare it twice. Name that snippet instead, and import it
+in the "Examples can assume" comment, with `import 'counter.dart';`: the
+other snippets of the file then see its declarations.
+
+The files listed under `unchecked` in `baselines/snippets.yaml` are not
+extracted. Do not add to that list: every snippet must be valid, or tagged
+`dart no-analyze`. Changelogs, tests and translations are never extracted.
+
 ### Updating English docs
 
 English docs are the source of truth for Riverpod docs. As such, translations

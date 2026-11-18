@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show KeepAliveLink;
 import 'package:flutter_riverpod/src/internals.dart' show ProviderScopeState;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -348,6 +349,50 @@ void main() {
       ref.read(provider);
 
       expect(ref.exists(provider), true);
+    });
+  });
+
+  group('WidgetRef.watch errors emitted after build', () {
+    // https://github.com/rrousselGit/riverpod/issues/4432
+    // Such errors rebuild the widget so that `ref.watch` rethrows them,
+    // instead of being sent to the zone's uncaught error handler.
+
+    testWidgets('retry errors can be caught by the widget', (tester) async {
+      var attempt = 0;
+      var buildCount = 0;
+      final provider = Provider<String>((ref) {
+        attempt++;
+        throw Exception('Test error $attempt');
+      });
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: Consumer(
+            builder: (context, ref, _) {
+              buildCount++;
+              String displayText;
+              try {
+                displayText = ref.watch(provider);
+              } catch (_) {
+                displayText = 'Error caught';
+              }
+              return Text(displayText, textDirection: TextDirection.ltr);
+            },
+          ),
+        ),
+      );
+
+      expect(find.text('Error caught'), findsOneWidget);
+      expect(attempt, 1);
+      expect(buildCount, 1);
+
+      await tester.pump(const Duration(seconds: 30));
+      await tester.pump(const Duration(seconds: 30));
+
+      expect(tester.takeException(), isNull);
+      expect(attempt, greaterThan(1));
+      expect(buildCount, greaterThan(1));
+      expect(find.text('Error caught'), findsOneWidget);
     });
   });
 
@@ -1020,6 +1065,47 @@ void main() {
           'scheduler is frozen: the providers were invalidated but '
           'never rebuilt',
     );
+  });
+
+  testWidgets('closing the KeepAliveLink of a previous element of a provider '
+      'does not close the subscription of a Consumer', (tester) async {
+    // https://github.com/rrousselGit/riverpod/issues/4806
+    final links = <KeepAliveLink>[];
+    final provider = Provider.autoDispose<int>((ref) {
+      links.add(ref.keepAlive());
+      return 0;
+    });
+
+    Widget page(int rebuild) {
+      return Consumer(
+        builder: (context, ref, _) {
+          return Text(
+            '${ref.watch(provider)} $rebuild',
+            textDirection: TextDirection.ltr,
+          );
+        },
+      );
+    }
+
+    await tester.pumpWidget(ProviderScope(child: page(0)));
+    final container = tester.container();
+
+    // Navigate away, then reset the provider while only its link retains it.
+    await tester.pumpWidget(const ProviderScope(child: SizedBox()));
+    container.invalidate(provider);
+    await tester.pump();
+
+    // Navigate back: the provider is mounted again, as a new element.
+    await tester.pumpWidget(ProviderScope(child: page(0)));
+    expect(links, hasLength(2));
+
+    links.first.close();
+    await tester.pump();
+
+    // Rebuild the Consumer without its provider changing.
+    await tester.pumpWidget(ProviderScope(child: page(1)));
+
+    expect(find.text('0 1'), findsOneWidget);
   });
 
   testWidgets('flushes the provider', (tester) async {

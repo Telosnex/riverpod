@@ -246,16 +246,19 @@ void main() {
   });
 
   test(
-    'generated sync notifier has value-only override absent on manual class',
+    'generated sync notifier has a value override absent on manual class',
     () {
       final container = ProviderContainer.test(
         overrides: [generatedCounterProvider.overrideWithValue(7)],
       );
+      container.listen(generatedCounterProvider, (_, _) {});
       expect(container.read(generatedCounterProvider), 7);
-      expect(
-        () => container.read(generatedCounterProvider.notifier),
-        throwsA(isA<TypeError>()),
-      );
+      // Since upstream #5007, the notifier is created as usual and only
+      // build is replaced by the value.
+      final notifier = container.read(generatedCounterProvider.notifier);
+      expect(notifier.builds, 0);
+      notifier.increment();
+      expect(container.read(generatedCounterProvider), 8);
       final dynamic manual = manualCounterProvider;
       expect(() => manual.overrideWithValue(7), throwsNoSuchMethodError);
     },

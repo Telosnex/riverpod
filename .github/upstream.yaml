@@ -6,7 +6,7 @@ sources:
   # commit is a week old.
   - name: rrousselGit/riverpod
     branch: https://github.com/rrousselGit/riverpod
-    pin: c6c37a916d6a646b86cdefcc345f64ee9092ad1b
+    pin: a16873f97a1eefd07e14506cb96fcd350c9e62e8
     lag_days: 7
     # The packages that the app takes from this fork.
     paths:

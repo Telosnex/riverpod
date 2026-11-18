@@ -598,14 +598,15 @@ Generated inheritance changes mock/fake design: extend the relevant notifier or 
 
 The generator emits `overrideWithValue(T)` for synchronous generated providers, **including synchronous generated notifier providers**. The public manual `NotifierProvider` does not have that method in this checkout.
 
-However, the generated method replaces the provider with `$SyncValueProvider<T>`:
+Since upstream #5007, the generated method keeps the notifier and replaces only `build` with the value:
 
 ```text
 read generatedCounterProvider -> overridden integer, works
-read generatedCounterProvider.notifier -> TypeError in the tested version
+read generatedCounterProvider.notifier -> the notifier; build is not called
+notifier.increment() -> the overridden integer plus one
 ```
 
-It is a **state-only substitution**, not “a counter initialized to this value.” Use it only when the consuming test/UI needs state and will not call notifier commands. Prefer `overrideWithBuild` when preserving commands matters. The exception is an observed implementation detail, not an API to depend on.
+Before #5007, it replaced the provider with `$SyncValueProvider<T>`, and reading `.notifier` threw a `TypeError`.
 
 This is a useful correction to the claim “generation only changes spelling and all methods are identical.” Core runtime parity does not imply an identical public surface.
 
@@ -914,7 +915,7 @@ Treat this as a **state-model migration** in addition to any declaration migrati
 | “A family can only take one value without codegen.” | One argument can be a record/value object; generated call syntax is more ergonomic. |
 | “Codegen gives lists deep equality as keys.” | It does not. |
 | “All manual providers have no static tooling.” | Some lints support both; some require annotated declaration information. |
-| “A notifier value override leaves its methods available.” | The generated sync value-only override removes the class-provider element in the tested implementation. |
+| “A notifier value override leaves its methods available.” | True since upstream #5007, for the generated sync override. Before it, `.notifier` threw. |
 | “Offscreen equals disposed.” | Pausing subscriptions differs from removing them, and retention also depends on configuration. |
 | “The annotation makes mutations safe/cancellable.” | Command concurrency, errors, cancellation, and invariants still need design. |
 | “One style is obviously faster in production.” | No such conclusion follows without a matched representative measurement. |
@@ -943,7 +944,7 @@ Treat this as a **state-model migration** in addition to any declaration migrati
 | Raw Future | Raw future versus `AsyncValue` exposure |
 | Mixed-style nested scoping | Generated and manual consumers see the correctly scoped value |
 | `overrideWithBuild` | Both retain command behavior |
-| Generated notifier value-only override | State works, notifier access fails; manual class lacks the convenience |
+| Generated notifier value override | State and notifier work, `build` is not called; manual class lacks the convenience |
 | Metadata | Generated name/hash, manual explicit name and null hash |
 | Service field mutation | Bare Provider does not observe arbitrary object mutation |
 | Controlled-hash reassembly | Hash-driven invalidation versus bare cached state |
