@@ -14,6 +14,8 @@ class Slow {
 final slowProvider = Provider<Slow>(name: 'slowProvider', (ref) => Slow());
 
 void main() {
+  // This fork attaches the devtool observer only when this flag is set.
+  debugRiverpodDevtoolEnabled = true;
   final container = ProviderContainer();
   container.listen(slowProvider, (_, _) {});
 

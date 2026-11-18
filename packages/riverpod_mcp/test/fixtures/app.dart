@@ -61,6 +61,8 @@ final valuesProvider = Provider<Map<String, Object?>>(
 );
 
 void main() {
+  // This fork attaches the devtool observer only when this flag is set.
+  debugRiverpodDevtoolEnabled = true;
   debugTrackProviderCreation = true;
   final container = ProviderContainer();
   container.listen(doubleProvider, (_, _) {});
