@@ -32,9 +32,7 @@ void _run({required int orphanCount, required int familyCount}) {
     final overridden = Provider<int>((ref) => -1);
 
     final root = ProviderContainer();
-    for (final p in orphans) {
-      root.read(p);
-    }
+    orphans.forEach(root.read);
     for (final f in families) {
       for (var m = 0; m < membersPerFamily; m++) {
         root.read(f(m));

@@ -68,7 +68,7 @@ void main() {
       ProviderTrace.hook = (event, fields) {
         events.add(event);
         if (event == 'flush' && fields['fromTask'] == true) {
-          taskFlushes.add(fields['provider'] as String);
+          taskFlushes.add(fields['provider']! as String);
         }
       };
 
