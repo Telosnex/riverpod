@@ -1,7 +1,7 @@
 // Behavioral probes, not performance benchmarks. See the research document.
 // Dynamic calls probe API absence/shared shape; explicit types/defaults test
 // assignability and argument normalization rather than stylistic concision.
-// ignore_for_file: avoid_dynamic_calls, avoid_redundant_argument_values, omit_local_variable_types
+// ignore_for_file: avoid_dynamic_calls, avoid_redundant_argument_values
 
 import 'package:riverpod/legacy.dart';
 import 'package:riverpod/misc.dart';

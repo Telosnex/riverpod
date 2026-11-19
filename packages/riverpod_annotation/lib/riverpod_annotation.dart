@@ -1,11 +1,11 @@
 // Annotations used by code-generators
-// ignore_for_file: invalid_use_of_internal_member
+// Generated providers import this intentionally internal compatibility surface.
+// ignore_for_file: invalid_use_of_internal_member, invalid_export_of_internal_element
 
 import 'package:meta/meta.dart' as meta;
 
 export 'dart:async' show FutureOr;
 
-// ignore: invalid_export_of_internal_element
 export './src/internal.dart'
     show
         $Ref,

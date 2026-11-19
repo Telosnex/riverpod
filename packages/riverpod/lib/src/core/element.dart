@@ -426,7 +426,6 @@ mixin ElementWithFuture<StateT, ValueT> on ProviderElement<StateT, ValueT> {
 bool get riverpodDebugValidateInternalState =>
     ProviderElement.debugValidateInternalState;
 // Setters cannot use named parameters.
-// ignore: avoid_positional_boolean_parameters
 set riverpodDebugValidateInternalState(bool value) {
   ProviderElement.debugValidateInternalState = value;
 }
